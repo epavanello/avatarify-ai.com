@@ -22,7 +22,7 @@
 				<Button type="button" link="/app" animated endIcon="arrow_forward">Go to the app</Button>
 			{:else}
 				<div>
-					<Button type="button" link="/login" animated endIcon="arrow_forward"
+					<Button type="button" link="/checkout" animated endIcon="arrow_forward"
 						>Start generating images</Button
 					>
 					<div>

@@ -1,34 +1,20 @@
 # Avatarify AI
+A platform for creating personal AI models for your profile picture
 
-Elevate your visual content with our AI-powered image generation service. Create unique and high-quality graphics with ease and stand out in the online market.
+## Technologies used
+- 💅🏽 Frontend: Svelte and TypeScript in strict mode with TailwindCSS and DaisyUI components
+- 🪄 Backend: Supabase for authentication, user data and photo storage
+- 🚄 Server: Vercel for deployment with SSR, SSG, and serverless endpoints
+- 💲 Payments: Stripe integration for payments
+- 🧙🏽‍♂️ Training API: Replicate for REST services for training and photo generation
 
-## Roadmap
+## Getting started
+1. Clone the repository: `https://github.com/epavanello/avatarify-ai.com`
+2. Install the dependencies: `npm install`
+3. Start the development server: `npm run dev`
 
-- [x] Backend raw APIs
-- [ ] Backend tuning
-- [x] Frontend scheleton (Tailwind, Daisy, Material Icons)
-- [x] Supabase integration
-- [x] Stripe integration
-- [x] User payment, signup and login
-- [x] Landing page
-- [x] App shell UI
-- [x] Buy domain (https://avatarify-ai.com)
-- [ ] Help page
-- [x] Contact page
-- [x] Messages after login, checkout
-- [x] Email tuning
-- [x] Resize before upload (see tweet bookmark)
-- [ ] Meta data, social images, favicon, titles
-- [ ] Localization
-- [ ] Social links
-- [ ] Connect analytics
-- [ ] Discord server
-- [ ] Launch
-- [ ] Dark mode
-- [ ] Newsletter
-- [ ] Terms and conditions / Privacy / cookies - app.termly.io
-- [ ] Connect logtail https://vercel.com/integrations/logtail
-- [x] show error toast
-- [ ] add show notification
-- [ ] toasts queues
-- [ ] Move stripe payment webhook
+## Contributing
+We welcome contributions of any kind, including bug reports, feature requests, and pull requests. If you're interested in contributing, please take a look at our open issues. 
+
+## License
+This project is licensed under the MIT license.

@@ -1,7 +1,10 @@
 <script lang="ts">
+	import TextGradient from './TextGradient.svelte';
+
 	import Button from '$lib/components/Button.svelte';
 	import Tooltip from '$lib/components/Tooltip.svelte';
 	import { showInfo } from '$lib/utilities';
+	import Icon from '$lib/components/Icon.svelte';
 
 	const manAvatars = Array.from({ length: 10 }, (_, index) => `avatars/man (${index + 1}).jpeg`);
 	const womanAvatars = Array.from(
@@ -141,28 +144,59 @@
 
 <div class="prose px-2 lg:prose-xl text-center pt-16 min-w-full">
 	<h2>How it works</h2>
-	<ol class="max-w-xl mx-auto text-left">
-		<li>👤 Sign up</li>
-		<li>📸 Upload your photos</li>
-		<li>💸 Make a payment with Stripe</li>
-		<li>👩🏽‍🏫 Start the AI training process (this may take up to 2 hours)</li>
-		<li>⚙️ Generate up to 100 high-definition photos from a wide range of available themes</li>
-	</ol>
 </div>
+<ul class="steps steps-vertical mx-auto mt-8 pl-0 md:pl-48">
+	<li class="step">
+		<span class="flex flex-row items-center gap-2"><Icon name="how_to_reg" />Sign up</span>
+	</li>
+	<li class="step">
+		<span class="flex flex-row items-center gap-2"
+			><Icon name="cloud_upload" />Upload your photos</span
+		>
+	</li>
+	<li class="step">
+		<span class="flex flex-row items-center gap-2"
+			><Icon name="add_shopping_cart" />Complete payment</span
+		>
+	</li>
+	<li class="step">
+		<span class="flex flex-row items-center gap-2"
+			><Icon name="neurology" />Launch the AI training</span
+		>
+	</li>
+	<li class="step">
+		<span class="flex flex-row items-center gap-2"
+			><Icon name="add_a_photo" />Generate up to 100 avatars</span
+		>
+	</li>
+</ul>
 
 <div class="prose px-2 lg:prose-xl text-center pt-16 min-w-full">
-	<h2>Who is behind this project?</h2>
-	<p class="max-w-2xl mx-auto">
-		I am <a href="https://twitter.com/e_pavanello" target="_blank" rel="noreferrer">Emanuele</a>,
-		the sole creator of this service. As an independent Developer, I own and operate all of my
-		sites. Your data is safe with me as I have no outside influence or agendas. Trust in the quality
-		and care put into this service.
-	</p>
+	<h2>More popular than <TextGradient>ever</TextGradient></h2>
+	<div class="stats stats-vertical lg:stats-horizontal shadow">
+		<div class="stat">
+			<div class="stat-title">Avatars generated</div>
+			<div class="stat-value">2K</div>
+			<div class="stat-desc">Jan 1st - Feb 1st</div>
+		</div>
+
+		<div class="stat">
+			<div class="stat-title">New Users</div>
+			<div class="stat-value">200</div>
+			<div class="stat-desc">↗️ 22%</div>
+		</div>
+
+		<div class="stat">
+			<div class="stat-title">Average training time</div>
+			<div class="stat-value">30min</div>
+			<div class="stat-desc">↘️ 60min (50%)</div>
+		</div>
+	</div>
 </div>
 
 <div class="prose px-2 lg:prose-xl text-center py-16 min-w-full">
 	<h2 class="max-w-2xl mx-auto">
-		Build a unique and personalized <span class="text-gradient">Avatar</span> with the help of AI
+		Create unique and personalized <TextGradient>Avatars</TextGradient> with AI assistance
 	</h2>
 	<div class="gap-4">
 		<Button type="button" link="/app" animated endIcon="arrow_forward">Start now</Button>

@@ -1110,6 +1110,7 @@ export enum Icons {
 	'new_releases' = 'e031',
 	'next_plan' = 'ef5d',
 	'next_week' = 'e16a',
+	'neurology' = 'e10e',
 	'nfc' = 'e1bb',
 	'night_shelter' = 'f1f1',
 	'nightlife' = 'ea62',
