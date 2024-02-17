@@ -8,17 +8,18 @@
 	import DropZone from '$lib/components/drop-zone.svelte';
 	import { toast } from 'svelte-sonner';
 	import { cn } from '$lib/utils';
+	import { tick } from 'svelte';
 
 	// https://github.com/InstantID/InstantID/blob/main/assets/0.png
 	// https://github.com/ahgsql/StyleSelectorXL/blob/main/sdxl_styles.json
 
-	let previewImage = $state('');
-	let loading = $state(false);
-	let dropZone = $state<DropZone>();
-	let capture = $state(false);
-	let cameraIsReady = $state(false);
-	let video = $state<HTMLVideoElement>();
-	let mouseOverDropZone = $state(false);
+	let previewImage = '';
+	let loading = false;
+	let dropZone: DropZone | undefined;
+	let capture = false;
+	let cameraIsReady = false;
+	let video: HTMLVideoElement | undefined;
+	let mouseOverDropZone = false;
 
 	function handleImageUpload(file?: File) {
 		if (file) {
@@ -56,10 +57,10 @@
 		previewImage = '';
 	}
 
-	let stream = $state<MediaStream>();
-	let style = $state<string>();
-
+	let stream: MediaStream | undefined;
+	let style = '';
 	async function startCapture() {
+		await tick();
 		if (video) {
 			cameraIsReady = false;
 			try {
@@ -97,11 +98,10 @@
 		}
 	}
 
-	$effect(() => {
-		if (capture && video) {
-			startCapture();
-		}
-	});
+	$: if (capture) {
+		console.log('startCapture');
+		startCapture();
+	}
 </script>
 
 <aside class="flex w-full max-w-xs flex-col pt-8">
@@ -114,12 +114,12 @@
 				extenstions={['png', 'jpg', 'jpeg']}
 				maxFileSize={1024}
 				mediaType="image/*"
-				onFileChange={(file) => handleImageUpload(file)}
-				onmouseenter={() => (mouseOverDropZone = true)}
-				onmouseleave={() => (mouseOverDropZone = false)}
+				on:fileChange={(e) => handleImageUpload(e.detail)}
+				on:mouseenter={() => (mouseOverDropZone = true)}
+				on:mouseleave={() => (mouseOverDropZone = false)}
 				disabled={!!previewImage || capture}
 			>
-				{#snippet extraAction()}
+				<svelte:fragment slot="extraAction">
 					<div class="divider my-2 text-xs">or</div>
 					<DaisyButton
 						label="Take a photo"
@@ -127,9 +127,9 @@
 						size="sm"
 						outline
 						class="mx-auto"
-						onclick={() => (capture = true)}
+						on:click={() => (capture = true)}
 					/>
-				{/snippet}
+				</svelte:fragment>
 				{#if capture}
 					<div
 						class="absolute inset-0 flex items-center justify-center overflow-hidden rounded-lg bg-base-100"
@@ -138,7 +138,7 @@
 							<span class="loading loading-infinity loading-md"></span>
 						{/if}
 
-						<video bind:this={video} class="absolute h-full w-full" autoplay onclick={shoot}>
+						<video bind:this={video} class="absolute h-full w-full" autoplay on:click={shoot}>
 							<track kind="captions" />
 						</video>
 						<DaisyButton
@@ -147,14 +147,14 @@
 							circle
 							variant="neutral"
 							class="absolute right-1 top-1"
-							onclick={closeCameraPreview}
+							on:click={closeCameraPreview}
 						/>
 						<DaisyButton
 							label="Capture"
 							icon="camera_alt"
 							size="xs"
 							class="absolute bottom-2 right-2"
-							onclick={shoot}
+							on:click={shoot}
 						/>
 					</div>
 				{/if}
@@ -166,7 +166,7 @@
 							circle
 							variant="neutral"
 							class="absolute right-1 top-1"
-							onclick={reset}
+							on:click={reset}
 						/>
 						<img
 							src={previewImage}
@@ -206,13 +206,13 @@
 	<footer
 		class="sticky bottom-0 flex flex-row justify-between border-t border-neutral-content bg-base-100 p-4"
 	>
-		<DaisyButton label="Surprise me" icon="sync" size="md" onclick={generate} {loading} />
+		<DaisyButton label="Surprise me" icon="sync" size="md" on:click={generate} {loading} />
 		<DaisyButton
 			label="Generate"
 			icon="bolt"
 			size="md"
 			variant="neutral"
-			onclick={generate}
+			on:click={generate}
 			{loading}
 		/>
 	</footer>

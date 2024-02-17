@@ -1,41 +1,34 @@
 <script lang="ts">
 	import Icon from '$lib/icon.svelte';
 	import { cn } from '$lib/utils';
-	import type { Snippet } from 'svelte';
+	import { createEventDispatcher } from 'svelte';
 	import type { HTMLAttributes } from 'svelte/elements';
 
-	let {
-		id,
-		extenstions = [],
-		maxFileSize,
-		mediaType,
-		onFileChange,
-		extraAction,
-		disabled,
-		children,
-		class: classes,
-		...rest
-	} = $props<
-		{
-			id?: string;
-			extenstions: string[];
-			maxFileSize?: number;
-			mediaType?: 'image/*' | 'video/*' | 'audio/*';
-			onFileChange?: (file?: File) => void;
-			extraAction?: Snippet;
-			disabled?: boolean;
-		} & HTMLAttributes<HTMLLabelElement>
-	>();
+	type $$Props = {
+		id?: string | undefined;
+		extenstions: string[];
+		maxFileSize?: number;
+		mediaType?: 'image/*' | 'video/*' | 'audio/*';
+		disabled?: boolean;
+	} & HTMLAttributes<HTMLLabelElement>;
 
-	const accept = $derived(
-		[mediaType, ...extenstions.map((e) => `.${e}`)].filter(Boolean).join(',')
-	);
+	export let id: $$Props['id'] = undefined;
+	export let extenstions: $$Props['extenstions'] = [];
+	export let maxFileSize: $$Props['maxFileSize'] = undefined;
+	export let mediaType: $$Props['mediaType'] = undefined;
+	export let disabled: $$Props['disabled'] = false;
+	let classes: $$Props['class'] = undefined;
+	export { classes as class };
+
+	$: accept = [mediaType, ...extenstions.map((e) => `.${e}`)].filter(Boolean).join(',');
+
+	const dispatch = createEventDispatcher<{ fileChange: File | undefined }>();
 
 	function handleFileChange(file?: File) {
-		onFileChange?.(file);
+		dispatch('fileChange', file);
 	}
 
-	let file = $state<HTMLInputElement>();
+	let file: HTMLInputElement | undefined;
 	export function reset() {
 		if (file) {
 			file.value = '';
@@ -44,30 +37,30 @@
 </script>
 
 <label
+	on:mouseenter
+	on:mouseleave
 	for={id}
 	class={cn(
 		'photos-border relative flex aspect-[4/3] w-full cursor-pointer flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600',
 		{ 'cursor-default': disabled },
 		classes
 	)}
-	ondrop={(e) => {
+	on:drop={(e) => {
 		e.preventDefault();
 		handleFileChange(e.dataTransfer?.files[0]);
 	}}
-	{...rest}
+	{...$$restProps}
 >
 	<div class="flex flex-col items-center justify-center pb-6 pt-5">
 		<Icon name="cloud_upload" size="lg" class="mb-3 text-base-content" />
 		<p class="text-sm text-base-content">
 			<span class="font-semibold">Click to upload</span> or drag and drop
 		</p>
-		{#if extraAction}
-			{@render extraAction()}
-		{/if}
+		<slot name="extraAction" />
 		<p class="absolute bottom-2 text-xs text-base-content">
-			{#if extenstions.length === 0}{:else if extenstions.length === 1}
+			{#if extenstions.length === 1}
 				{extenstions[0]} file only
-			{:else}
+			{:else if extenstions.length > 1}
 				{extenstions.map((e) => `.${e}`).join(', ')} files only
 			{/if}
 			{#if extenstions.length > 0 && maxFileSize}
@@ -85,11 +78,9 @@
 		class="hidden"
 		{accept}
 		{disabled}
-		oninput={(e) => {
+		on:input={(e) => {
 			handleFileChange(e.currentTarget.files?.[0]);
 		}}
 	/>
-	{#if children}
-		{@render children()}
-	{/if}
+	<slot />
 </label>

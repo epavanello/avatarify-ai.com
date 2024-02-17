@@ -2239,31 +2239,28 @@
 
 <script lang="ts">
 	import { cn } from '$lib/utils';
-	let {
-		class: classes,
-		name,
-		size = 'md'
-	} = $props<{
-		class?: string;
-		/**
-		 * Search on: https://fonts.google.com/icons
-		 */
-		name: Icons | undefined;
-		size?: 'xs' | 'sm' | 'md' | 'lg';
-	}>();
+
+	let classes = '';
+	export { classes as class };
+	/**
+	 * Search on: https://fonts.google.com/icons
+	 */
+	export let name: Icons | undefined;
+
+	export let size: 'xs' | 'sm' | 'md' | 'lg' = 'md';
 </script>
 
 {#if name !== undefined}
 	<span
 		class={cn(
-			'aspect-square inline-block material-icons material-symbols-outlined',
+			'material-icons material-symbols-outlined inline-block aspect-square',
 			{
 				'text-xs': size == 'xs',
 				'text-base': size == 'sm',
 				'text-xl': size == 'md',
 				'text-2xl': size == 'lg'
 			},
-			"leading-none",
+			'leading-none',
 			classes
 		)}
 	>

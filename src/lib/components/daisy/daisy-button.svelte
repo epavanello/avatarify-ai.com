@@ -4,36 +4,34 @@
 	import { cn } from '$lib/utils';
 	import type { HTMLButtonAttributes } from 'svelte/elements';
 
-	let {
-		children,
-		label,
-		icon,
-		loading,
-		circle,
-		outline,
-		ghost,
-		class: classes,
-		variant = 'default',
-		size = 'md',
-		...rest
-	} = $props<
-		{
-			label?: string;
-			/**
-			 * Search on: https://fonts.google.com/icons
-			 */
-			icon?: Icons;
-			loading?: boolean;
-			circle?: boolean;
-			outline?: boolean;
-			ghost?: boolean;
-			variant?: 'default' | 'neutral' | 'primary' | 'secondary' | 'success' | 'warning' | 'error';
-			size?: 'xs' | 'sm' | 'md' | 'lg';
-		} & HTMLButtonAttributes
-	>();
+	type $$Props = {
+		label?: string;
+		/**
+		 * Search on: https://fonts.google.com/icons
+		 */
+		icon?: Icons;
+		loading?: boolean;
+		circle?: boolean;
+		outline?: boolean;
+		ghost?: boolean;
+		variant?: 'default' | 'neutral' | 'primary' | 'secondary' | 'success' | 'warning' | 'error';
+		size?: 'xs' | 'sm' | 'md' | 'lg';
+	} & HTMLButtonAttributes;
+
+	export let label: $$Props['label'] = undefined;
+	export let icon: $$Props['icon'] = undefined;
+	export let loading: $$Props['loading'] = false;
+	export let circle: $$Props['circle'] = false;
+	export let outline: $$Props['outline'] = false;
+	export let ghost: $$Props['ghost'] = false;
+	export let variant: $$Props['variant'] = 'default';
+	export let size: $$Props['size'] = 'md';
+	let classes: $$Props['class'] = undefined;
+	export { classes as class };
 </script>
 
 <button
+	on:click
 	class={cn(
 		'btn',
 		{
@@ -55,10 +53,10 @@
 		classes
 	)}
 	disabled={loading}
-	{...rest}
+	{...$$restProps}
 >
-	{#if children}
-		{@render children()}
+	{#if $$slots.default}
+		<slot />
 	{:else if label}
 		{label}
 	{/if}
