@@ -14,7 +14,11 @@
 	// https://github.com/ahgsql/StyleSelectorXL/blob/main/sdxl_styles.json
 
 	let previewImage = '';
-	let loading = false;
+	let surpriseMeLoading = false;
+	let generateLoading = false;
+
+	$: loading = surpriseMeLoading || generateLoading;
+
 	let dropZone: DropZone | undefined;
 	let capture = false;
 	let cameraIsReady = false;
@@ -31,14 +35,20 @@
 		}
 	}
 
-	function generateRandomStyle() {
-		let styles = ['Line Art', 'Craft Clay', 'Analog Film', 'Origami', 'Psychedelic'];
-		style = styles[Math.floor(Math.random() * styles.length)];
-
-		generate();
+	async function surpriseMe() {
+		style = `${Math.floor(Math.random() * 6) + 1}`;
+		surpriseMeLoading = true;
+		await request();
+		surpriseMeLoading = false;
 	}
 
 	async function generate() {
+		generateLoading = true;
+		await request();
+		generateLoading = false;
+	}
+
+	async function request() {
 		if (!previewImage) {
 			toast.warning('Please upload a photo');
 			return;
@@ -47,10 +57,11 @@
 			toast.warning('Please select a style');
 			return;
 		}
-		loading = true;
-		await new Promise((resolve) => setTimeout(resolve, 1000));
-		loading = false;
+		if (!loading) {
+			await new Promise((resolve) => setTimeout(resolve, 1000));
+		}
 	}
+
 	function reset(e: MouseEvent) {
 		e.preventDefault();
 		dropZone?.reset();
@@ -206,14 +217,20 @@
 	<footer
 		class="sticky bottom-0 flex flex-row justify-between border-t border-neutral-content bg-base-100 p-4"
 	>
-		<DaisyButton label="Surprise me" icon="sync" size="md" on:click={generate} {loading} />
+		<DaisyButton
+			label="Surprise me"
+			icon="sync"
+			size="md"
+			on:click={surpriseMe}
+			loading={surpriseMeLoading}
+		/>
 		<DaisyButton
 			label="Generate"
 			icon="bolt"
 			size="md"
 			variant="neutral"
 			on:click={generate}
-			{loading}
+			loading={generateLoading}
 		/>
 	</footer>
 </aside>
