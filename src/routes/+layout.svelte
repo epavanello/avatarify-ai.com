@@ -1,5 +1,6 @@
 <script lang="ts">
   import { invalidate } from '$app/navigation';
+  import { ModeWatcher } from 'mode-watcher';
   import { onMount } from 'svelte';
 
   export let data;
@@ -20,4 +21,5 @@
   });
 </script>
 
+<ModeWatcher defaultMode={'light'}></ModeWatcher>
 <slot />
