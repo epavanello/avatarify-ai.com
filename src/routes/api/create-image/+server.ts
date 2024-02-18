@@ -1,6 +1,6 @@
 import Replicate from 'replicate';
 import { createClient } from '@supabase/supabase-js';
-import { error } from '@sveltejs/kit';
+import { error, type Config } from '@sveltejs/kit';
 import type { RequestHandler } from '../$types';
 import { PRIVATE_REPLICATE_API_TOKEN, PRIVATE_SUPABASE_SERVICE_ROLE } from '$env/static/private';
 import stylesServer from './styles.server';
@@ -13,6 +13,10 @@ const replicate = new Replicate({
 });
 
 const supabaseAdmin = createClient<Database>(PUBLIC_SUPABASE_URL, PRIVATE_SUPABASE_SERVICE_ROLE);
+
+export const config: Config = {
+  runtime: 'edge'
+};
 
 export const POST: RequestHandler = async ({ request, locals: { getSession } }) => {
   const [data, session] = await Promise.all([request.formData(), getSession()]);
