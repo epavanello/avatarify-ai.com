@@ -9,17 +9,21 @@
   import { toast } from 'svelte-sonner';
   import { cn } from '$lib/utils';
   import { tick } from 'svelte';
+  import { blobImage, generatedImageURL, generationLoading } from './store';
+  import type { Session } from '@supabase/supabase-js';
 
   // https://github.com/InstantID/InstantID/blob/main/assets/0.png
   // https://github.com/ahgsql/StyleSelectorXL/blob/main/sdxl_styles.json
 
-  let blobImage: Blob | null = null;
+  export let session: Session | null;
+
   let surpriseMeLoading = false;
   let generateLoading = false;
+  $: previewImage = $blobImage ? URL.createObjectURL($blobImage) : '';
 
-  $: previewImage = blobImage ? URL.createObjectURL(blobImage) : '';
-
-  $: loading = surpriseMeLoading || generateLoading;
+  $: {
+    generationLoading.set(surpriseMeLoading || generateLoading);
+  }
 
   let dropZone: DropZone | undefined;
   let capture = false;
@@ -29,8 +33,8 @@
 
   function handleImageUpload(file?: File) {
     if (file) {
-      blobImage = file;
-	  mouseOverDropZone = false;
+      blobImage.set(file);
+      mouseOverDropZone = false;
     }
   }
 
@@ -48,7 +52,7 @@
   }
 
   async function request() {
-    if (!blobImage) {
+    if (!$blobImage) {
       toast.warning('Please upload a photo');
       return;
     }
@@ -56,10 +60,15 @@
       toast.warning('Please select a style');
       return;
     }
-    if (!loading) {
+    if (!session?.user) {
+      toast.warning('Please login to generate image');
+      return;
+    }
+    if (!$generationLoading) {
       try {
+        generatedImageURL.set('');
         var data = new FormData();
-        data.append('image', previewImage);
+        data.append('image', $blobImage);
         data.append('style', style);
 
         const response = await fetch('/api/create', {
@@ -67,16 +76,18 @@
           body: data
         });
 
-        const result = await response.json();
-      } catch (error) {}
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+        generatedImageURL.set(((await response.json()) as { c: string }).c);
+      } catch (error) {
+        toast.error('Error generating image');
+        console.error('Error generating image', error);
+      }
     }
   }
 
   function reset(e: MouseEvent) {
     e.preventDefault();
     dropZone?.reset();
-    blobImage = null;
+    blobImage.set(null);
   }
 
   let stream: MediaStream | undefined;
@@ -123,14 +134,14 @@
   async function shoot(e: MouseEvent) {
     if (video && cameraIsReady) {
       try {
-        blobImage = await getImageFromVideo(video);
+        blobImage.set(await getImageFromVideo(video));
       } catch (error) {
         toast.error('Error capturing image');
         console.error('Error capturing image', error);
       }
 
       closeCameraPreview(e);
-        mouseOverDropZone = false;
+      mouseOverDropZone = false;
       setTimeout(() => {
         mouseOverDropZone = false;
       }, 10);
@@ -138,7 +149,6 @@
   }
 
   $: if (capture) {
-    console.log('startCapture');
     startCapture();
   }
 </script>
@@ -156,7 +166,7 @@
         on:fileChange={(e) => handleImageUpload(e.detail)}
         on:mouseenter={() => (mouseOverDropZone = true)}
         on:mouseleave={() => (mouseOverDropZone = false)}
-        disabled={!!blobImage || capture}
+        disabled={!!$blobImage || capture}
       >
         <svelte:fragment slot="extraAction">
           <div class="divider my-2 text-xs">or</div>
@@ -174,7 +184,7 @@
             class="absolute inset-0 flex items-center justify-center overflow-hidden rounded-lg bg-base-100"
           >
             {#if !cameraIsReady}
-              <span class="loading loading-infinity loading-md"></span>
+              <span class="loading loading-infinity loading-lg"></span>
             {/if}
 
             <video bind:this={video} class="absolute h-full w-full" autoplay on:click={shoot}>
@@ -198,7 +208,7 @@
           </div>
         {/if}
         {#if previewImage}
-          <div class="absolute inset-0 bg-white">
+          <div class="absolute inset-0 bg-base-100">
             <div
               class="absolute inset-0"
               out:fade={{ duration: 100 }}
