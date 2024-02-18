@@ -10,7 +10,7 @@
 
 <Header supabase={data.supabase} session={data.session} />
 
-<main class="flex flex-1 flex-row overflow-auto">
+<main class="flex flex-1 flex-col overflow-auto md:flex-row">
   <Board />
   <Sidebar session={data.session} />
 </main>

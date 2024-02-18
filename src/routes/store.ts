@@ -15,7 +15,6 @@ generatedImageID.subscribe(async (value) => {
 // https://replicate.delivery/pbxt/Fy3CXofV62UXe0ZfYduDqRFYYlSKWEd8vXN53YJkKA6KIZvkA/out_0.png
 
 export const generationLoading = writable(false);
-
 export const blobImage = writable<Blob | null>(null);
 
 let skip = true;

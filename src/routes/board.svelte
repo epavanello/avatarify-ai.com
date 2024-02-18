@@ -10,6 +10,7 @@
   import { page } from '$app/stores';
   import { tick } from 'svelte';
   import { fade } from 'svelte/transition';
+  import { toast } from 'svelte-sonner';
 
   async function buyCredit() {
     const stripe = await loadStripe(PUBLIC_STRIPE_PUBLISHABLE_KEY);
@@ -50,12 +51,14 @@
         await fetch(`/api/stripe-session-status?session_id=${session_id}`)
       ).json();
       if (stripeSession.status == 'open') {
+        toast.warning('Ops! Your payment is not completed yet.');
         buyCredit();
       } else if (stripeSession.status == 'complete') {
         canDownload = true;
+        toast.success('Your photo is ready to download!');
         randomId = Math.random().toString(36).substring(7);
       }
-    } else {
+    } else if ($generatedImageID) {
       const checkResult = await (await fetch(`/api/check-image/${$generatedImageID}`)).json();
       if (checkResult.ok) {
         canDownload = true;
@@ -70,25 +73,41 @@
     a.download = 'generated-image.jpg';
     a.click();
   }
+
+  let imageLoaded = false;
+  generatedImageID.subscribe((value) => {
+    if (value) {
+      imageLoaded = false;
+    }
+  });
+  function onImageLoad() {
+    imageLoaded = true;
+  }
 </script>
 
 <section
-  class="sticky top-0 flex flex-1 flex-col items-center justify-center gap-4 border-r border-neutral-content bg-base-200 p-4"
+  class="top-0 flex flex-1 flex-col items-center justify-center gap-4 bg-base-200 p-4 md:sticky md:border-r md:border-neutral-content"
 >
   <div
-    class="photos-border relative flex aspect-[4/3] w-full max-w-xl flex-col items-center justify-center"
+    class="photos-border relative flex aspect-[4/3] w-full max-w-xl flex-col items-center justify-center gap-4 bg-base-100"
   >
-    {#if $generationLoading}
+    {#if $generationLoading || imageLoaded}
       <span class="loading loading-infinity loading-lg"></span>
-    {:else if $generatedImageID}
+    {/if}
+
+    {#if $generatedImageID}
       <img
         src={`${PUBLIC_WEBSITE_HOST}/api/get-image/${$generatedImageID}?_=${randomId}`}
         alt="Generated"
         class={cn(
-          'absolute h-full w-full origin-bottom-left translate-y-0 rotate-0 rounded-lg object-cover transition-all'
+          'absolute h-full w-full origin-bottom-left translate-y-0 rotate-0 rounded-lg object-cover opacity-100 transition-all',
+          {
+            'opacity-0': !imageLoaded
+          }
         )}
         crossorigin="anonymous"
         in:fade={{ duration: 300 }}
+        on:load={onImageLoad}
       />
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-interactive-supports-focus -->
@@ -101,7 +120,13 @@
         }}
       ></div>
     {:else}
-      <p class="text-2xl font-bold text-neutral-content">Your photo will appear here</p>
+      <p class="px-8 text-center text-2xl font-bold text-neutral-content">
+        {#if $generationLoading}
+          Be patient, we are generating your photo...
+        {:else}
+          The generated photo will appear here
+        {/if}
+      </p>
     {/if}
   </div>
 
@@ -121,16 +146,15 @@
           variant="neutral"
           icon="lock"
           builders={[builder]}
-          class={cn({
+          class={cn('hidden md:inline-block', {
             invisible: !$generatedImageID
           })}>Download</DaisyButton
         >
       </Dialog.Trigger>
-      <Dialog.Content class="max-h-[90%] max-w-lg overflow-auto">
+      <Dialog.Content class="max-w-md overflow-auto">
         <Dialog.Header>
-          <Dialog.Title>Download your photo</Dialog.Title>
+          <Dialog.Title>Do you like the result?</Dialog.Title>
           <Dialog.Description>
-            Do you like the result?<br />
             Buy a credit to download the photo in high resolution.
           </Dialog.Description>
         </Dialog.Header>
@@ -157,14 +181,7 @@
         })}>Download</DaisyButton
       >
     </Dialog.Trigger>
-    <Dialog.Content class="max-h-[90%] max-w-lg overflow-auto">
-      <Dialog.Header>
-        <Dialog.Title>Download your photo</Dialog.Title>
-        <Dialog.Description>
-          Do you like the result?<br />
-          Buy a credit to download the photo in high resolution.
-        </Dialog.Description>
-      </Dialog.Header>
+    <Dialog.Content class="max-h-full max-w-[1100px] overflow-auto px-0 lg:max-h-[80%]">
       <div id="checkout">
         <!-- Checkout will insert the payment form here -->
       </div>

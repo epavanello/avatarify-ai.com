@@ -11,7 +11,6 @@
   import { tick } from 'svelte';
   import { blobImage, generatedImageID, generationLoading } from './store';
   import type { Session } from '@supabase/supabase-js';
-  import { PUBLIC_WEBSITE_HOST } from '$env/static/public';
 
   // https://github.com/InstantID/InstantID/blob/main/assets/0.png
   // https://github.com/ahgsql/StyleSelectorXL/blob/main/sdxl_styles.json
@@ -154,7 +153,7 @@
   }
 </script>
 
-<aside class="flex w-full max-w-xs flex-col pt-8">
+<aside class="flex w-full md:max-w-xs flex-col pt-8">
   <div class="flex flex-col gap-4 px-4 pb-4">
     <div class="grid gap-2">
       <Label role="button" for="picture">Your photo</Label>
