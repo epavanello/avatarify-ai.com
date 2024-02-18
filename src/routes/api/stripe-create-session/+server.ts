@@ -1,0 +1,42 @@
+import { error } from '@sveltejs/kit';
+import type { RequestHandler } from '../$types';
+import Stripe from 'stripe';
+import { PRIVATE_STRIPE_SECRET_KEY } from '$env/static/private';
+import { PUBLIC_STRIPE_PRICE_ID, PUBLIC_WEBSITE_HOST } from '$env/static/public';
+
+const stripe = new Stripe(PRIVATE_STRIPE_SECRET_KEY, {
+  apiVersion: '2023-10-16'
+});
+
+export const POST: RequestHandler = async ({ locals: { getSession } }) => {
+  const session = await getSession();
+
+  if (!session || !session.user) {
+    return error(401, 'Unauthorized');
+  }
+
+  try {
+    
+    const stripeSession = await stripe.checkout.sessions.create({
+      line_items: [
+        {
+          price: PUBLIC_STRIPE_PRICE_ID,
+          quantity: 1
+        }
+      ],
+      mode: 'payment',
+      ui_mode: 'embedded',
+      return_url: `${PUBLIC_WEBSITE_HOST}/?session_id={CHECKOUT_SESSION_ID}`
+    });
+
+    return new Response(
+      JSON.stringify({
+        clientSecret: stripeSession.client_secret
+      }),
+      { status: 201 }
+    );
+  } catch (e) {
+    console.error(e);
+    return error(500, 'Replicate error');
+  }
+};

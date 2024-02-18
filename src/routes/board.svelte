@@ -5,6 +5,10 @@
   import type { EventHandler } from 'svelte/elements';
   import DaisyButton from '$lib/components/daisy/daisy-button.svelte';
   import * as Dialog from '$lib/components/ui/dialog';
+  import { loadStripe } from '@stripe/stripe-js';
+  import { PUBLIC_STRIPE_PUBLISHABLE_KEY } from '$env/static/public';
+  import { onMount } from 'svelte';
+  import { page } from '$app/stores';
 
   let watermark: ImageWatermark | null = null;
 
@@ -43,6 +47,47 @@
     console.log('watermark created');
     lastUrl = target.src;
   };
+
+  async function buyCredit() {
+    const stripe = await loadStripe(PUBLIC_STRIPE_PUBLISHABLE_KEY);
+    if (!stripe) {
+      console.error('Stripe not loaded');
+      return;
+    }
+
+    const response = await fetch('/api/stripe-create-session', {
+      method: 'POST'
+    });
+    const { clientSecret } = await response.json();
+
+    // Initialize Checkout
+    const checkout = await stripe.initEmbeddedCheckout({
+      clientSecret
+    });
+
+    // Mount Checkout
+    checkout.mount('#checkout');
+  }
+
+  let canDownload = false;
+
+  onMount(async () => {
+    // check if url contains session_id
+    const session_id = $page.url.searchParams.get('session_id');
+    if (session_id) {
+      const stripeSession = await (
+        await fetch(`/api/stripe-session-status?session_id=${session_id}`)
+      ).json();
+      if (stripeSession.status == 'open') {
+        // Remount embedded Checkout
+      } else if (stripeSession.status == 'complete') {
+        canDownload = true;
+        // Show success page
+        // Optionally use session.payment_status or session.customer_email
+        // to customize the success page
+      }
+    }
+  });
 </script>
 
 <section
@@ -79,33 +124,45 @@
     {/if}
   </div>
 
-  <Dialog.Root>
-    <Dialog.Trigger asChild let:builder>
-      <DaisyButton
-        variant="neutral"
-        icon="download"
-        builders={[builder]}
-        class={cn({
-          invisible: !$generatedImageURL
-        })}>Download</DaisyButton
-      >
-    </Dialog.Trigger>
-    <Dialog.Content class="max-w-md">
-      <Dialog.Header>
-        <Dialog.Title>Download your photo</Dialog.Title>
-        <Dialog.Description>
-          Do you like the result?<br />
-          Buy a credit to download the photo in high resolution.
-        </Dialog.Description>
-      </Dialog.Header>
+  {#if canDownload}
+    <DaisyButton
+      variant="neutral"
+      icon="download"
+      class={cn({
+        invisible: !$generatedImageURL
+      })}>Download</DaisyButton
+    >
+  {:else}
+    <Dialog.Root>
+      <Dialog.Trigger asChild let:builder>
+        <DaisyButton
+          variant="neutral"
+          icon="lock"
+          builders={[builder]}
+          class={cn({
+            invisible: !$generatedImageURL
+          })}>Download</DaisyButton
+        >
+      </Dialog.Trigger>
+      <Dialog.Content class="max-h-[90%] max-w-lg overflow-auto">
+        <Dialog.Header>
+          <Dialog.Title>Download your photo</Dialog.Title>
+          <Dialog.Description>
+            Do you like the result?<br />
+            Buy a credit to download the photo in high resolution.
+          </Dialog.Description>
+        </Dialog.Header>
 
-      <div id="checkout">
-        <!-- Checkout will insert the payment form here -->
-      </div>
-      <div class="flex flex-row justify-between">
-        <DaisyButton size="sm">Cancel</DaisyButton>
-        <DaisyButton variant="neutral" size="sm" icon="sell">Buy credit</DaisyButton>
-      </div>
-    </Dialog.Content>
-  </Dialog.Root>
+        <div id="checkout">
+          <!-- Checkout will insert the payment form here -->
+        </div>
+        <div class="flex flex-row justify-between">
+          <DaisyButton size="sm">Cancel</DaisyButton>
+          <DaisyButton variant="neutral" size="sm" icon="sell" on:click={buyCredit}
+            >Buy credit</DaisyButton
+          >
+        </div>
+      </Dialog.Content>
+    </Dialog.Root>
+  {/if}
 </section>

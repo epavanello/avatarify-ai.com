@@ -39,6 +39,7 @@
   },
   "type": "module",
   "dependencies": {
+    "@stripe/stripe-js": "^3.0.3",
     "@supabase/auth-helpers-sveltekit": "^0.12.0",
     "@supabase/supabase-js": "^2.39.6",
     "bits-ui": "^0.18.1",
@@ -47,6 +48,7 @@
     "lucide-svelte": "^0.331.0",
     "mode-watcher": "^0.2.1",
     "replicate": "^0.27.1",
+    "stripe": "^14.17.0",
     "svelte-sonner": "^0.3.17",
     "sveltekit-superforms": "^1.13.4",
     "tailwind-merge": "^2.2.1",

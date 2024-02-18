@@ -71,7 +71,7 @@
         data.append('image', $blobImage);
         data.append('style', style);
 
-        const response = await fetch('/api/create', {
+        const response = await fetch('/api/create-image', {
           method: 'POST',
           body: data
         });

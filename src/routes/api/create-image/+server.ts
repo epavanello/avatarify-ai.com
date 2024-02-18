@@ -6,7 +6,6 @@ import { PRIVATE_REPLICATE_API_TOKEN, PRIVATE_SUPABASE_SERVICE_ROLE } from '$env
 import stylesServer from './styles.server';
 import { PUBLIC_SUPABASE_URL } from '$env/static/public';
 import { v4 as uuidv4 } from 'uuid';
-import { toBase64 } from '$lib/utils';
 
 const replicate = new Replicate({
   auth: PRIVATE_REPLICATE_API_TOKEN
