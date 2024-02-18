@@ -78,7 +78,7 @@
         });
 
         if (response.status === 429) {
-          toast.error('You have reached the limit of image generation. Please try again later.');
+          toast.error('You have reached the limit of image generation. Please try again tomorrow');
           return;
         } else if (response.status !== 200) {
           toast.error('Error generating image');
@@ -166,7 +166,7 @@
   }
 </script>
 
-<aside class="flex w-full flex-col pt-8 md:max-w-xs">
+<aside class="flex w-full flex-col pt-8 md:max-w-sm">
   <div class="flex flex-col gap-4 px-4 pb-4">
     <div class="grid gap-2">
       <Label role="button" for="picture">Your photo</Label>

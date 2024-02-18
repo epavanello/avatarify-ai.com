@@ -1,12 +1,18 @@
 export const styles = [
-  'Line Art',
-  'Craft Clay',
+  'Anime',
+  'Neon Punk',
+  'GTA',
+  'Photographic',
+  'Pixel Art',
   'Analog Film',
+  'Cinematic',
+  'Comic Book',
+  'Cubist',
+  'Digital Art',
+  'Enhance',
+  'Fantasy Art',
   'Origami',
-  'Psychedelic',
-  'Steampunk',
-  'Super Mario',
-  'GTA'
+  '3D Model',
 ] as const;
 /*
 [

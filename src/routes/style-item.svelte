@@ -12,7 +12,7 @@
   class="relative flex flex-col items-center justify-between overflow-hidden rounded-lg border-4 border-muted bg-popover hover:bg-accent hover:text-accent-foreground [&:has([data-state=checked])]:border-base-content"
 >
   <RadioGroup.Item value={name} id={name} class="sr-only" aria-label={name} />
-  <img src={`/s1_${name}.png`} alt={name} class="aspect-square w-36" />
+  <img src={`/${name}.png`} alt={name} class="aspect-square w-36" />
   <span class="style-title absolute bottom-1 left-0 w-full text-center text-white drop-shadow-sm">
     {name}
   </span>
