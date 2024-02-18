@@ -34,6 +34,32 @@ export type Database = {
   }
   public: {
     Tables: {
+      payments: {
+        Row: {
+          created_at: string
+          picture_id: string
+          uid: string
+        }
+        Insert: {
+          created_at?: string
+          picture_id: string
+          uid: string
+        }
+        Update: {
+          created_at?: string
+          picture_id?: string
+          uid?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_payments_uid_fkey"
+            columns: ["uid"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       photos: {
         Row: {
           created_at: string | null

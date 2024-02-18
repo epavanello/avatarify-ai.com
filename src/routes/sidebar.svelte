@@ -9,8 +9,9 @@
   import { toast } from 'svelte-sonner';
   import { cn } from '$lib/utils';
   import { tick } from 'svelte';
-  import { blobImage, generatedImageURL, generationLoading } from './store';
+  import { blobImage, generatedImageID, generationLoading } from './store';
   import type { Session } from '@supabase/supabase-js';
+  import { PUBLIC_WEBSITE_HOST } from '$env/static/public';
 
   // https://github.com/InstantID/InstantID/blob/main/assets/0.png
   // https://github.com/ahgsql/StyleSelectorXL/blob/main/sdxl_styles.json
@@ -66,7 +67,7 @@
     }
     if (!$generationLoading) {
       try {
-        generatedImageURL.set('');
+        generatedImageID.set('');
         var data = new FormData();
         data.append('image', $blobImage);
         data.append('style', style);
@@ -75,8 +76,8 @@
           method: 'POST',
           body: data
         });
-
-        generatedImageURL.set(((await response.json()) as { c: string }).c);
+        const id = ((await response.json()) as { id: string }).id;
+        generatedImageID.set(id);
       } catch (error) {
         toast.error('Error generating image');
         console.error('Error generating image', error);

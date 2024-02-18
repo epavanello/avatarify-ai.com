@@ -8,15 +8,14 @@ const stripe = new Stripe(PRIVATE_STRIPE_SECRET_KEY, {
   apiVersion: '2023-10-16'
 });
 
-export const POST: RequestHandler = async ({ locals: { getSession } }) => {
-  const session = await getSession();
+export const POST: RequestHandler = async ({ request, locals: { getSession } }) => {
+  const [session, { id }] = await Promise.all([getSession(), request.json()]);
 
   if (!session || !session.user) {
     return error(401, 'Unauthorized');
   }
 
   try {
-    
     const stripeSession = await stripe.checkout.sessions.create({
       line_items: [
         {
@@ -24,6 +23,9 @@ export const POST: RequestHandler = async ({ locals: { getSession } }) => {
           quantity: 1
         }
       ],
+      metadata: {
+        id
+      },
       mode: 'payment',
       ui_mode: 'embedded',
       return_url: `${PUBLIC_WEBSITE_HOST}/?session_id={CHECKOUT_SESSION_ID}`

@@ -11,7 +11,7 @@ const replicate = new Replicate({
   auth: PRIVATE_REPLICATE_API_TOKEN
 });
 
-const supabase = createClient(PUBLIC_SUPABASE_URL, PRIVATE_SUPABASE_SERVICE_ROLE);
+const supabaseAdmin = createClient(PUBLIC_SUPABASE_URL, PRIVATE_SUPABASE_SERVICE_ROLE);
 
 export const POST: RequestHandler = async ({ request, locals: { getSession } }) => {
   const [data, session] = await Promise.all([request.formData(), getSession()]);
@@ -33,13 +33,13 @@ export const POST: RequestHandler = async ({ request, locals: { getSession } }) 
 
   const id = uuidv4();
 
-  const file = await supabase.storage.from('v2').upload(`upload/${session.user.id}/${id}`, image);
+  const file = await supabaseAdmin.storage.from('v2').upload(`upload/${session.user.id}/${id}`, image);
 
   if (file.error) {
     return error(500, 'Supabase error');
   }
   try {
-    const signedUrl = await supabase.storage.from('v2').createSignedUrl(file.data.path, 60);
+    const signedUrl = await supabaseAdmin.storage.from('v2').createSignedUrl(file.data.path, 60);
 
     if (signedUrl.error) {
       return error(500, 'Supabase error');
@@ -86,7 +86,7 @@ export const POST: RequestHandler = async ({ request, locals: { getSession } }) 
     const originalFile = new File([originalBlob], 'original.png', { type: 'image/png' });
 
     // Upload the original image to Supabase
-    const originalUpload = await supabase.storage
+    const originalUpload = await supabaseAdmin.storage
       .from('v2')
       .upload(`original/${session.user.id}/${id}`, originalFile);
 
@@ -96,9 +96,7 @@ export const POST: RequestHandler = async ({ request, locals: { getSession } }) 
 
     return new Response(
       JSON.stringify({
-        c:
-          'data:image/png;base64,' +
-          Buffer.from(await originalBlob.arrayBuffer()).toString('base64')
+        id
       }),
       { status: 201 }
     );

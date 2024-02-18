@@ -2,12 +2,12 @@ import { browser } from '$app/environment';
 import { toBase64 } from '$lib/utils';
 import { writable } from 'svelte/store';
 
-export const generatedImageURL = writable((browser && localStorage.generatedImageURL) || '');
+export const generatedImageID = writable((browser && localStorage.generatedImageID) || '');
 
-generatedImageURL.subscribe(async (value) => {
+generatedImageID.subscribe(async (value) => {
   if (browser) {
     console.log('new value');
-    localStorage.generatedImageURL = value;
+    localStorage.generatedImageID = value;
   }
 });
 

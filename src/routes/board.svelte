@@ -1,52 +1,15 @@
 <script lang="ts">
   import { ImageWatermark } from 'watermark-js-plus';
-  import { generatedImageURL, generationLoading } from './store';
+  import { generatedImageID, generationLoading } from './store';
   import { cn } from '$lib/utils';
-  import type { EventHandler } from 'svelte/elements';
   import DaisyButton from '$lib/components/daisy/daisy-button.svelte';
   import * as Dialog from '$lib/components/ui/dialog';
   import { loadStripe } from '@stripe/stripe-js';
-  import { PUBLIC_STRIPE_PUBLISHABLE_KEY } from '$env/static/public';
+  import { PUBLIC_STRIPE_PUBLISHABLE_KEY, PUBLIC_WEBSITE_HOST } from '$env/static/public';
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
-
-  let watermark: ImageWatermark | null = null;
-
-  let lastUrl = '';
-
-  let imageIsOk = false;
-
-  const onLoadImage: EventHandler<Event, Element> = async (e) => {
-    const target = e.target as HTMLImageElement;
-    console.log('onLoadImage');
-    if (!e.target) return;
-    imageIsOk = lastUrl === target.src;
-    if (imageIsOk) return;
-
-    if (watermark) {
-      watermark.destroy();
-      watermark = null;
-    }
-    watermark = new ImageWatermark({
-      content: 'AvatarifyAI',
-      width: target.width,
-      height: target.height,
-      dom: target,
-      fontColor: '#fff',
-      globalAlpha: 0.3,
-      fontSize: '60px',
-      rotate: 12,
-      shadowStyle: {
-        shadowBlur: 10,
-        shadowColor: '#00000044',
-        shadowOffsetX: 0,
-        shadowOffsetY: 0
-      }
-    });
-    await watermark.create();
-    console.log('watermark created');
-    lastUrl = target.src;
-  };
+  import { tick } from 'svelte';
+  import { fade } from 'svelte/transition';
 
   async function buyCredit() {
     const stripe = await loadStripe(PUBLIC_STRIPE_PUBLISHABLE_KEY);
@@ -56,7 +19,10 @@
     }
 
     const response = await fetch('/api/stripe-create-session', {
-      method: 'POST'
+      method: 'POST',
+      body: JSON.stringify({
+        id: $generatedImageID
+      })
     });
     const { clientSecret } = await response.json();
 
@@ -64,12 +30,17 @@
     const checkout = await stripe.initEmbeddedCheckout({
       clientSecret
     });
+    showStripe = true;
+    await tick();
 
     // Mount Checkout
     checkout.mount('#checkout');
   }
 
   let canDownload = false;
+  let showStripe = false;
+
+  let randomId = Math.random().toString(36).substring(7);
 
   onMount(async () => {
     // check if url contains session_id
@@ -79,15 +50,26 @@
         await fetch(`/api/stripe-session-status?session_id=${session_id}`)
       ).json();
       if (stripeSession.status == 'open') {
-        // Remount embedded Checkout
+        buyCredit();
       } else if (stripeSession.status == 'complete') {
         canDownload = true;
-        // Show success page
-        // Optionally use session.payment_status or session.customer_email
-        // to customize the success page
+        randomId = Math.random().toString(36).substring(7);
+      }
+    } else {
+      const checkResult = await (await fetch(`/api/check-image/${$generatedImageID}`)).json();
+      if (checkResult.ok) {
+        canDownload = true;
+        randomId = Math.random().toString(36).substring(7);
       }
     }
   });
+
+  function download() {
+    const a = document.createElement('a');
+    a.href = `${PUBLIC_WEBSITE_HOST}/api/get-image/${$generatedImageID}?_=${randomId}`;
+    a.download = 'generated-image.jpg';
+    a.click();
+  }
 </script>
 
 <section
@@ -98,16 +80,15 @@
   >
     {#if $generationLoading}
       <span class="loading loading-infinity loading-lg"></span>
-    {:else if $generatedImageURL}
+    {:else if $generatedImageID}
       <img
-        src={$generatedImageURL}
-        on:load={onLoadImage}
+        src={`${PUBLIC_WEBSITE_HOST}/api/get-image/${$generatedImageID}?_=${randomId}`}
         alt="Generated"
         class={cn(
-          'absolute h-full w-full origin-bottom-left translate-y-0 rotate-0 rounded-lg object-cover transition-all',
-          { 'opacity-0': !imageIsOk }
+          'absolute h-full w-full origin-bottom-left translate-y-0 rotate-0 rounded-lg object-cover transition-all'
         )}
         crossorigin="anonymous"
+        in:fade={{ duration: 300 }}
       />
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <!-- svelte-ignore a11y-interactive-supports-focus -->
@@ -129,8 +110,9 @@
       variant="neutral"
       icon="download"
       class={cn({
-        invisible: !$generatedImageURL
-      })}>Download</DaisyButton
+        invisible: !$generatedImageID
+      })}
+      on:click={download}>Download</DaisyButton
     >
   {:else}
     <Dialog.Root>
@@ -140,7 +122,7 @@
           icon="lock"
           builders={[builder]}
           class={cn({
-            invisible: !$generatedImageURL
+            invisible: !$generatedImageID
           })}>Download</DaisyButton
         >
       </Dialog.Trigger>
@@ -152,10 +134,6 @@
             Buy a credit to download the photo in high resolution.
           </Dialog.Description>
         </Dialog.Header>
-
-        <div id="checkout">
-          <!-- Checkout will insert the payment form here -->
-        </div>
         <div class="flex flex-row justify-between">
           <DaisyButton size="sm">Cancel</DaisyButton>
           <DaisyButton variant="neutral" size="sm" icon="sell" on:click={buyCredit}
@@ -166,3 +144,30 @@
     </Dialog.Root>
   {/if}
 </section>
+
+{#if showStripe}
+  <Dialog.Root open>
+    <Dialog.Trigger asChild let:builder>
+      <DaisyButton
+        variant="neutral"
+        icon="lock"
+        builders={[builder]}
+        class={cn({
+          invisible: !$generatedImageID
+        })}>Download</DaisyButton
+      >
+    </Dialog.Trigger>
+    <Dialog.Content class="max-h-[90%] max-w-lg overflow-auto">
+      <Dialog.Header>
+        <Dialog.Title>Download your photo</Dialog.Title>
+        <Dialog.Description>
+          Do you like the result?<br />
+          Buy a credit to download the photo in high resolution.
+        </Dialog.Description>
+      </Dialog.Header>
+      <div id="checkout">
+        <!-- Checkout will insert the payment form here -->
+      </div>
+    </Dialog.Content>
+  </Dialog.Root>
+{/if}

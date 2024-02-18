@@ -4,5 +4,6 @@
 - [x] Store last image on localstorage
 - [x] Block generation without login
 - [x] Add watermark to images
-- [ ] Handle payments
+- [x] Handle payments
 - [ ] Mobile version
+- [ ] Rate limit

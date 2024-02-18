@@ -48,6 +48,7 @@
     "lucide-svelte": "^0.331.0",
     "mode-watcher": "^0.2.1",
     "replicate": "^0.27.1",
+    "sharp": "^0.33.2",
     "stripe": "^14.17.0",
     "svelte-sonner": "^0.3.17",
     "sveltekit-superforms": "^1.13.4",
