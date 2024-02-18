@@ -1,4 +1,15 @@
 export const styles = [
+  'Line Art',
+  'Craft Clay',
+  'Analog Film',
+  'Origami',
+  'Psychedelic',
+  'Steampunk',
+  'Super Mario',
+  'GTA'
+] as const;
+/*
+[
   '3D Model',
   'Analog Film',
   'Anime',
@@ -75,6 +86,6 @@ export const styles = [
   'Neon Noir',
   'Silhouette',
   'Tilt-Shift'
-] as const;
+] as const; */
 
 export type Styles = (typeof styles)[number];

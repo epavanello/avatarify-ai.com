@@ -196,7 +196,13 @@
               <span class="loading loading-infinity loading-lg"></span>
             {/if}
 
-            <video bind:this={video} class="absolute h-full w-full" autoplay playsinline on:click={shoot}>
+            <video
+              bind:this={video}
+              class="absolute h-full w-full"
+              autoplay
+              playsinline
+              on:click={shoot}
+            >
               <track kind="captions" />
             </video>
             <DaisyButton
@@ -257,14 +263,9 @@
       </Card.Header>
       <Card.Content class="grid gap-6">
         <RadioGroup.Root bind:value={style} class="grid grid-cols-2 gap-4">
-          <StyleItem name="Line Art" />
-          <StyleItem name="Craft Clay" />
-          <StyleItem name="Analog Film" />
-          <StyleItem name="Origami" />
-          <StyleItem name="Psychedelic" />
-          <StyleItem name="Steampunk" />
-          <StyleItem name="Super Mario" />
-          <StyleItem name="GTA" />
+          {#each styles as style}
+            <StyleItem name={style} />
+          {/each}
         </RadioGroup.Root>
       </Card.Content>
     </Card.Root>
