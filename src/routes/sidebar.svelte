@@ -76,7 +76,7 @@
           method: 'POST',
           body: data
         });
-        
+
         if (response.status === 429) {
           toast.error('You have reached the limit of image generation. Please try again later.');
           return;
@@ -196,7 +196,7 @@
               <span class="loading loading-infinity loading-lg"></span>
             {/if}
 
-            <video bind:this={video} class="absolute h-full w-full" autoplay on:click={shoot}>
+            <video bind:this={video} class="absolute h-full w-full" autoplay playsinline on:click={shoot}>
               <track kind="captions" />
             </video>
             <DaisyButton
