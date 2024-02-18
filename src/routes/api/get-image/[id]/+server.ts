@@ -16,40 +16,39 @@ export const GET: RequestHandler = async ({ params, locals: { getSession } }) =>
   if (!params.id) {
     return error(400, 'Missing id');
   }
-  try {
-    const searchPayment = await supabaseAdmin
-      .from('payments')
-      .select('*', { count: 'exact', head: true })
-      .eq('picture_id', params.id)
-      .eq('uid', session.user.id);
-    if (searchPayment.error) {
-      return error(500, 'Supabase error');
+  const searchPayment = await supabaseAdmin
+    .from('payments')
+    .select('*', { count: 'exact', head: true })
+    .eq('picture_id', params.id)
+    .eq('uid', session.user.id);
+  if (searchPayment.error) {
+    return error(500, 'Supabase error');
+  }
+  if (searchPayment.count === 1) {
+    const file = await supabaseAdmin.storage
+      .from('v2')
+      .download(`original/${session.user.id}/${params.id}`);
+
+    if (file.error) {
+      return error(404, 'Not found');
     }
-    if (searchPayment.count === 1) {
-      const file = await supabaseAdmin.storage
-        .from('v2')
-        .download(`original/${session.user.id}/${params.id}`);
 
-      if (file.error) {
-        return error(500, 'Supabase error');
-      }
+    const arrayBuffer = await file.data.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
 
-      const arrayBuffer = await file.data.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
+    return new Response(buffer);
+  } else {
+    const file = await supabaseAdmin.storage
+      .from('v2')
+      .download(`original/${session.user.id}/${params.id}`);
 
-      return new Response(buffer);
-    } else {
-      const file = await supabaseAdmin.storage
-        .from('v2')
-        .download(`original/${session.user.id}/${params.id}`);
+    if (file.error) {
+      return error(404, 'Not found');
+    }
 
-      if (file.error) {
-        return error(500, 'Supabase error');
-      }
-
-      const arrayBuffer = await file.data.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      const svgImage = `
+    const arrayBuffer = await file.data.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    const svgImage = `
     <svg width="700" height="200">
       <style>
       .title { fill: #fff; font-size: 120px; font-weight: bold; opacity: 0.5; font-family: Arial, sans-serif;}
@@ -57,28 +56,24 @@ export const GET: RequestHandler = async ({ params, locals: { getSession } }) =>
       <text x="50%" y="50%" text-anchor="middle" class="title">AvatarifyAI</text>
     </svg>
     `;
-      const svgBuffer = Buffer.from(svgImage);
-      return new Response(
-        await sharp(
-          await sharp(buffer)
-            .composite([
-              {
-                input: svgBuffer,
-                top: 500,
-                left: 290
-              }
-            ])
-            .toBuffer()
-        )
-          .resize({
-            width: 600,
-            height: 450
-          })
+    const svgBuffer = Buffer.from(svgImage);
+    return new Response(
+      await sharp(
+        await sharp(buffer)
+          .composite([
+            {
+              input: svgBuffer,
+              top: 500,
+              left: 290
+            }
+          ])
           .toBuffer()
-      );
-    }
-  } catch (e) {
-    console.error(e);
-    return error(500, 'Generic error');
+      )
+        .resize({
+          width: 600,
+          height: 450
+        })
+        .toBuffer()
+    );
   }
 };

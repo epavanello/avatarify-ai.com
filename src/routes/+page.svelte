@@ -1,5 +1,4 @@
 <script>
-  import { Toaster } from '$lib/components/ui/sonner';
   import '../app.pcss';
   import Board from './board.svelte';
   import Header from './header.svelte';
@@ -14,5 +13,3 @@
   <Board />
   <Sidebar session={data.session} />
 </main>
-
-<Toaster richColors position="bottom-left" />

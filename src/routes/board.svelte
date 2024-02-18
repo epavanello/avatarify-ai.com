@@ -61,7 +61,7 @@
         history.replaceState({}, document.title, '/');
       }
     } else if ($generatedImageID) {
-      const checkResult = await (await fetch(`/api/check-image/${$generatedImageID}`)).json();
+      const checkResult = await (await fetch(`/api/check-payment/${$generatedImageID}`)).json();
       if (checkResult.ok) {
         canDownload = true;
         randomId = Math.random().toString(36).substring(7);
@@ -69,21 +69,40 @@
     }
   });
 
+  function getImageUrl() {
+    return `${PUBLIC_WEBSITE_HOST}/api/get-image/${$generatedImageID}?_=${randomId}`;
+  }
+
   function download() {
     const a = document.createElement('a');
-    a.href = `${PUBLIC_WEBSITE_HOST}/api/get-image/${$generatedImageID}?_=${randomId}`;
+    a.href = getImageUrl();
     a.download = 'generated-image.jpg';
     a.click();
   }
 
   let imageLoaded = false;
+  let interval: NodeJS.Timeout;
   generatedImageID.subscribe((value) => {
     if (value) {
       imageLoaded = false;
       canDownload = false;
+
+      // on each new image, check if the image is ready to download
+      if (interval) clearInterval(interval);
+
+      interval = setInterval(async () => {
+        const checkResult = await fetch(`/api/get-image/${value}`);
+        if (checkResult.status === 200) {
+          randomId = Math.random().toString(36).substring(7);
+          clearInterval(interval);
+        }
+      }, 5000);
+    } else {
+      imageLoaded = true;
     }
   });
   function onImageLoad() {
+    console.log('image loaded');
     imageLoaded = true;
   }
 </script>
@@ -94,7 +113,7 @@
   <div
     class="photos-border relative flex aspect-[4/3] w-full max-w-xl flex-col items-center justify-center gap-4 bg-base-100"
   >
-    {#if $generationLoading || imageLoaded}
+    {#if $generationLoading || !imageLoaded}
       <span class="loading loading-infinity loading-lg"></span>
     {/if}
 
@@ -122,9 +141,10 @@
           e.stopPropagation();
         }}
       ></div>
-    {:else}
+    {/if}
+    {#if $generationLoading || !imageLoaded || !$generatedImageID}
       <p class="px-8 text-center text-2xl font-bold text-neutral-content">
-        {#if $generationLoading}
+        {#if $generationLoading || !imageLoaded}
           Be patient, we are generating your photo...
         {:else}
           The generated photo will appear here
@@ -142,7 +162,7 @@
       })}
       on:click={download}>Download</DaisyButton
     >
-  {:else}
+  {:else if imageLoaded}
     <Dialog.Root>
       <Dialog.Trigger asChild let:builder>
         <DaisyButton
