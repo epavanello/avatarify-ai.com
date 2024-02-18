@@ -57,6 +57,8 @@
         canDownload = true;
         toast.success('Your photo is ready to download!');
         randomId = Math.random().toString(36).substring(7);
+        // replace the url without session
+        history.replaceState({}, document.title, '/');
       }
     } else if ($generatedImageID) {
       const checkResult = await (await fetch(`/api/check-image/${$generatedImageID}`)).json();
@@ -78,6 +80,7 @@
   generatedImageID.subscribe((value) => {
     if (value) {
       imageLoaded = false;
+      canDownload = false;
     }
   });
   function onImageLoad() {
@@ -177,7 +180,7 @@
         icon="lock"
         builders={[builder]}
         class={cn({
-          invisible: !$generatedImageID
+          'hidden md:invisible': !$generatedImageID
         })}>Download</DaisyButton
       >
     </Dialog.Trigger>

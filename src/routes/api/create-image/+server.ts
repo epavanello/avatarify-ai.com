@@ -6,12 +6,13 @@ import { PRIVATE_REPLICATE_API_TOKEN, PRIVATE_SUPABASE_SERVICE_ROLE } from '$env
 import stylesServer from './styles.server';
 import { PUBLIC_SUPABASE_URL } from '$env/static/public';
 import { v4 as uuidv4 } from 'uuid';
+import type { Database } from '$lib/supabase-types';
 
 const replicate = new Replicate({
   auth: PRIVATE_REPLICATE_API_TOKEN
 });
 
-const supabaseAdmin = createClient(PUBLIC_SUPABASE_URL, PRIVATE_SUPABASE_SERVICE_ROLE);
+const supabaseAdmin = createClient<Database>(PUBLIC_SUPABASE_URL, PRIVATE_SUPABASE_SERVICE_ROLE);
 
 export const POST: RequestHandler = async ({ request, locals: { getSession } }) => {
   const [data, session] = await Promise.all([request.formData(), getSession()]);
@@ -31,9 +32,25 @@ export const POST: RequestHandler = async ({ request, locals: { getSession } }) 
     return error(400, 'Image is not a file');
   }
 
+  const today = new Date().toISOString().split('T')[0];
+
+  // Check daily generation limit
+  const { count } = await supabaseAdmin
+    .from('generations')
+    .select('*', { count: 'exact', head: true })
+    .eq('uid', session.user.id)
+    .eq('day', today)
+    .throwOnError();
+
+  if (count && count >= 10) {
+    return error(429, 'Daily generation limit reached');
+  }
+
   const id = uuidv4();
 
-  const file = await supabaseAdmin.storage.from('v2').upload(`upload/${session.user.id}/${id}`, image);
+  const file = await supabaseAdmin.storage
+    .from('v2')
+    .upload(`upload/${session.user.id}/${id}`, image);
 
   if (file.error) {
     return error(500, 'Supabase error');
@@ -44,6 +61,17 @@ export const POST: RequestHandler = async ({ request, locals: { getSession } }) 
     if (signedUrl.error) {
       return error(500, 'Supabase error');
     }
+
+    // Track the image generation
+    await supabaseAdmin
+      .from('generations')
+      .insert({
+        picture_id: id,
+        uid: session.user.id,
+        // GMT date
+        day: today
+      })
+      .throwOnError();
 
     const output = (await replicate.run(
       'zsxkib/instant-id:6af8583c541261472e92155d87bba80d5ad98461665802f2ba196ac099aaedc9',

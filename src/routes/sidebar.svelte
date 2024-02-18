@@ -76,6 +76,12 @@
           method: 'POST',
           body: data
         });
+        
+        if (response.status === 429) {
+          toast.error('You have reached the limit of image generation. Please try again later.');
+          return;
+        }
+
         const id = ((await response.json()) as { id: string }).id;
         if (id) {
           generatedImageID.set(id);

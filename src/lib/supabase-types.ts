@@ -34,20 +34,55 @@ export type Database = {
   }
   public: {
     Tables: {
-      payments: {
+      generations: {
         Row: {
           created_at: string
+          day: string
+          id: number
           picture_id: string
           uid: string
         }
         Insert: {
           created_at?: string
+          day: string
+          id?: number
+          picture_id?: string
+          uid?: string
+        }
+        Update: {
+          created_at?: string
+          day?: string
+          id?: number
+          picture_id?: string
+          uid?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_generations_uid_fkey"
+            columns: ["uid"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      payments: {
+        Row: {
+          created_at: string
           picture_id: string
+          stripe_session_id: string
+          uid: string
+        }
+        Insert: {
+          created_at?: string
+          picture_id: string
+          stripe_session_id: string
           uid: string
         }
         Update: {
           created_at?: string
           picture_id?: string
+          stripe_session_id?: string
           uid?: string
         }
         Relationships: [
