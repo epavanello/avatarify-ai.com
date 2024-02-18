@@ -11,6 +11,7 @@
   import { tick } from 'svelte';
   import { blobImage, generatedImageID, generationLoading } from './store';
   import type { Session } from '@supabase/supabase-js';
+  import { styles, type Styles } from './api/create-image/styles';
 
   // https://github.com/InstantID/InstantID/blob/main/assets/0.png
   // https://github.com/ahgsql/StyleSelectorXL/blob/main/sdxl_styles.json
@@ -39,7 +40,7 @@
   }
 
   async function surpriseMe() {
-    style = `${Math.floor(Math.random() * 6) + 1}`;
+    style = styles[Math.floor(Math.random() * styles.length)];
     surpriseMeLoading = true;
     await request();
     surpriseMeLoading = false;
@@ -76,7 +77,9 @@
           body: data
         });
         const id = ((await response.json()) as { id: string }).id;
-        generatedImageID.set(id);
+        if (id) {
+          generatedImageID.set(id);
+        }
       } catch (error) {
         toast.error('Error generating image');
         console.error('Error generating image', error);
@@ -91,7 +94,7 @@
   }
 
   let stream: MediaStream | undefined;
-  let style = '';
+  let style: Styles | '' = '';
   async function startCapture() {
     await tick();
     if (video) {
@@ -153,7 +156,7 @@
   }
 </script>
 
-<aside class="flex w-full md:max-w-xs flex-col pt-8">
+<aside class="flex w-full flex-col pt-8 md:max-w-xs">
   <div class="flex flex-col gap-4 px-4 pb-4">
     <div class="grid gap-2">
       <Label role="button" for="picture">Your photo</Label>

@@ -1,3 +1,5 @@
+import type { Styles } from './styles';
+
 export default [
   {
     name: '3D Model',
@@ -455,4 +457,8 @@ export default [
     negative_prompt:
       'blurry, noisy, deformed, flat, low contrast, unrealistic, oversaturated, underexposed'
   }
-];
+] as {
+  name: Styles;
+  prompt: string;
+  negative_prompt: string;
+}[];

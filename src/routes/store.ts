@@ -34,9 +34,12 @@ blobImage.subscribe(async (value) => {
 });
 
 if (browser && localStorage.blob) {
-  try {
-    blobImage.set(await fetch(localStorage.blob).then((r) => r.blob()));
-  } catch (error) {
-    console.error(error);
-  }
+  fetch(localStorage.blob)
+    .then((r) => r.blob())
+    .then((blob) => {
+      blobImage.set(blob);
+    })
+    .catch((e) => {
+      console.error(e);
+    });
 }

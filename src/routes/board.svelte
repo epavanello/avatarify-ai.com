@@ -146,8 +146,8 @@
           variant="neutral"
           icon="lock"
           builders={[builder]}
-          class={cn('hidden md:inline-block', {
-            invisible: !$generatedImageID
+          class={cn({
+            'hidden md:invisible': !$generatedImageID
           })}>Download</DaisyButton
         >
       </Dialog.Trigger>
