@@ -80,6 +80,10 @@
         if (response.status === 429) {
           toast.error('You have reached the limit of image generation. Please try again later.');
           return;
+        } else if (response.status !== 200) {
+          toast.error('Error generating image');
+          console.error('Error generating image', response);
+          return;
         }
 
         const id = ((await response.json()) as { id: string }).id;
