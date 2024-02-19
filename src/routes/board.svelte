@@ -4,7 +4,7 @@
   import { cn } from '$lib/utils';
   import DaisyButton from '$lib/components/daisy/daisy-button.svelte';
   import * as Dialog from '$lib/components/ui/dialog';
-  import { loadStripe } from '@stripe/stripe-js';
+  import { loadStripe, type StripeEmbeddedCheckout } from '@stripe/stripe-js';
   import { PUBLIC_STRIPE_PUBLISHABLE_KEY, PUBLIC_WEBSITE_HOST } from '$env/static/public';
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
@@ -12,7 +12,10 @@
   import { fade } from 'svelte/transition';
   import { toast } from 'svelte-sonner';
 
+  let checkout: StripeEmbeddedCheckout | null = null;
+
   async function buyCredit() {
+    askBuyDialog = false;
     const stripe = await loadStripe(PUBLIC_STRIPE_PUBLISHABLE_KEY);
     if (!stripe) {
       console.error('Stripe not loaded');
@@ -28,14 +31,23 @@
     const { clientSecret } = await response.json();
 
     // Initialize Checkout
-    const checkout = await stripe.initEmbeddedCheckout({
+    checkout = await stripe.initEmbeddedCheckout({
       clientSecret
     });
     showStripe = true;
-    await tick();
+  }
 
-    // Mount Checkout
-    checkout.mount('#checkout');
+  function onShowStripe(el: HTMLDivElement) {
+    if (el && checkout) {
+      checkout.mount(el);
+    }
+    return {
+      destroy() {
+        if (checkout) {
+          checkout.destroy();
+        }
+      }
+    };
   }
 
   let canDownload = false;
@@ -105,6 +117,8 @@
     console.log('image loaded');
     imageLoaded = true;
   }
+
+  let askBuyDialog = false;
 </script>
 
 <section
@@ -163,7 +177,7 @@
       on:click={download}>Download</DaisyButton
     >
   {:else if imageLoaded}
-    <Dialog.Root>
+    <Dialog.Root bind:open={askBuyDialog}>
       <Dialog.Trigger asChild let:builder>
         <DaisyButton
           variant="neutral"
@@ -182,7 +196,12 @@
           </Dialog.Description>
         </Dialog.Header>
         <div class="flex flex-row justify-between">
-          <DaisyButton size="sm">Cancel</DaisyButton>
+          <DaisyButton
+            size="sm"
+            on:click={() => {
+              askBuyDialog = false;
+            }}>Cancel</DaisyButton
+          >
           <DaisyButton variant="neutral" size="sm" icon="sell" on:click={buyCredit}
             >Buy credit</DaisyButton
           >
@@ -190,24 +209,12 @@
       </Dialog.Content>
     </Dialog.Root>
   {/if}
-</section>
 
-{#if showStripe}
-  <Dialog.Root open>
-    <Dialog.Trigger asChild let:builder>
-      <DaisyButton
-        variant="neutral"
-        icon="lock"
-        builders={[builder]}
-        class={cn({
-          'hidden md:invisible': !$generatedImageID
-        })}>Download</DaisyButton
-      >
-    </Dialog.Trigger>
+  <Dialog.Root bind:open={showStripe}>
     <Dialog.Content class="max-h-full max-w-[1100px] overflow-auto px-0 lg:max-h-[80%]">
-      <div id="checkout">
+      <div use:onShowStripe>
         <!-- Checkout will insert the payment form here -->
       </div>
     </Dialog.Content>
   </Dialog.Root>
-{/if}
+</section>
