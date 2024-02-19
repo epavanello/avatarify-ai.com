@@ -218,7 +218,17 @@
     </Dialog.Root>
   {/if}
 
-  <Dialog.Root bind:open={showStripe}>
+  <Dialog.Root bind:open={showStripe} onOpenChange={
+    (isOpen) => {
+      if (!isOpen) {
+        window.plausible('CloseStripeCheckout');
+      }
+    }
+  }>
+    <Dialog.Trigger asChild let:builder>
+      <div builders={[builder]}></div>
+    </Dialog.Trigger
+  }>
     <Dialog.Content class="max-h-full max-w-[1100px] overflow-auto px-0 lg:max-h-[80%]">
       <div use:onShowStripe>
         <!-- Checkout will insert the payment form here -->
