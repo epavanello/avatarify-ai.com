@@ -105,6 +105,7 @@
         const checkResult = await fetch(`/api/get-image/${value}`);
         if (checkResult.status === 200) {
           randomId = Math.random().toString(36).substring(7);
+          window.plausible('ImageGenerated');
           clearInterval(interval);
         }
       }, 5000);
