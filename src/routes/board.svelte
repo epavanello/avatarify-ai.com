@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { ImageWatermark } from 'watermark-js-plus';
   import { generatedImageID, generationLoading } from './store';
   import { cn } from '$lib/utils';
   import DaisyButton from '$lib/components/daisy/daisy-button.svelte';
@@ -8,13 +7,13 @@
   import { PUBLIC_STRIPE_PUBLISHABLE_KEY, PUBLIC_WEBSITE_HOST } from '$env/static/public';
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
-  import { tick } from 'svelte';
   import { fade } from 'svelte/transition';
   import { toast } from 'svelte-sonner';
 
   let checkout: StripeEmbeddedCheckout | null = null;
 
   async function buyCredit() {
+    window.plausible('OpenStripeCheckout');
     askBuyDialog = false;
     const stripe = await loadStripe(PUBLIC_STRIPE_PUBLISHABLE_KEY);
     if (!stripe) {
@@ -177,7 +176,14 @@
       on:click={download}>Download</DaisyButton
     >
   {:else if imageLoaded}
-    <Dialog.Root bind:open={askBuyDialog}>
+    <Dialog.Root
+      bind:open={askBuyDialog}
+      onOpenChange={(isOpen) => {
+        if (isOpen) {
+          window.plausible('TryDownloadModal');
+        }
+      }}
+    >
       <Dialog.Trigger asChild let:builder>
         <DaisyButton
           variant="neutral"
@@ -200,6 +206,7 @@
             size="sm"
             on:click={() => {
               askBuyDialog = false;
+              window.plausible('UndoTryDownload');
             }}>Cancel</DaisyButton
           >
           <DaisyButton variant="neutral" size="sm" icon="sell" on:click={buyCredit}

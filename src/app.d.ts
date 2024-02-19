@@ -14,6 +14,13 @@ declare global {
       session: Session | null;
     }
   }
+
+  interface Window {
+    plausible: {
+      (eventName: string, options?: Record<string, unknown>): void;
+      q: Array<[string, Record<string, unknown>?]>;
+    };
+  }
 }
 
 export {};

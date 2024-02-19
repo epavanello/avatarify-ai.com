@@ -53,6 +53,7 @@
   }
 
   async function request() {
+    window.plausible('TryGenerateImage');
     if (!$blobImage) {
       toast.warning('Please upload a photo');
       return;
@@ -65,6 +66,7 @@
       toast.warning('Please login to generate image');
       return;
     }
+    window.plausible('GenerateImage');
     if (!$generationLoading) {
       try {
         generatedImageID.set('');
