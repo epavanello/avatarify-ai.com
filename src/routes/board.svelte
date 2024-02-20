@@ -199,7 +199,8 @@
         <Dialog.Header>
           <Dialog.Title>Do you like the result?</Dialog.Title>
           <Dialog.Description>
-            Buy a credit to download the photo in high resolution.
+            Pay just <b>$0.97</b> and instantly download the selected avatar in high definition (1280x960)
+            without any watermark.
           </Dialog.Description>
         </Dialog.Header>
         <div class="flex flex-row justify-between">
@@ -211,8 +212,8 @@
             }}>Cancel</DaisyButton
           >
           <DaisyButton variant="neutral" size="sm" icon="sell" on:click={buyCredit}
-            >Buy credit</DaisyButton
-          >
+            >Buy now
+          </DaisyButton>
         </div>
       </Dialog.Content>
     </Dialog.Root>
