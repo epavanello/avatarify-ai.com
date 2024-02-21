@@ -5,13 +5,16 @@
   import * as Dialog from '$lib/components/ui/dialog';
   import { loadStripe, type StripeEmbeddedCheckout } from '@stripe/stripe-js';
   import { PUBLIC_STRIPE_PUBLISHABLE_KEY, PUBLIC_WEBSITE_HOST } from '$env/static/public';
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import { page } from '$app/stores';
   import { fade } from 'svelte/transition';
   import { toast } from 'svelte-sonner';
   import Typewriter from 'svelte-typewriter';
+  import { breakpoint } from '$lib/breakpoints';
+  import Footer from '$lib/components/footer.svelte';
 
   let checkout: StripeEmbeddedCheckout | null = null;
+  let board: HTMLElement;
 
   async function buyCredit() {
     window.plausible('OpenStripeCheckout');
@@ -55,6 +58,32 @@
 
   let randomId = Math.random().toString(36).substring(7);
 
+  // a list with motivationals quotes to show on the board
+  const motivationalsMessages = [
+    'Less than your morning coffee for stunning results!',
+    'Unlock premium quality for less than a dollar!',
+    'Elevate your image at minimal cost!',
+    'Invest in excellence for the price of a gum!',
+    'Transform your profile without breaking the bank!',
+    'Experience high definition for pocket change!',
+    'Why wait? Upgrade your avatar for less now!',
+    'Get professional looks for casual prices!',
+    "Don't miss out on a bargain upgrade!",
+    'Seize the HD difference for mere cents!'
+  ];
+
+  let motivationalMessage = '';
+
+  function getRandomMotivationalMessage(): string {
+    let message = '';
+    do {
+      message = motivationalsMessages[Math.floor(Math.random() * motivationalsMessages.length)];
+    } while (message === motivationalMessage);
+    return message;
+  }
+
+  motivationalMessage = getRandomMotivationalMessage();
+
   onMount(async () => {
     // check if url contains session_id
     const session_id = $page.url.searchParams.get('session_id');
@@ -94,15 +123,20 @@
 
   let imageLoaded = false;
   let interval: NodeJS.Timeout;
-  generatedImageID.subscribe((value) => {
+  generatedImageID.subscribe(async (value) => {
     if (value) {
       imageLoaded = false;
       canDownload = false;
+      if ($breakpoint.mobile) {
+        await tick();
+        board.scrollIntoView({ behavior: 'smooth' });
+      }
 
       // on each new image, check if the image is ready to download
       if (interval) clearInterval(interval);
 
       interval = setInterval(async () => {
+        motivationalMessage = getRandomMotivationalMessage();
         const checkResult = await fetch(`/api/get-image/${value}`);
         if (checkResult.status === 200) {
           randomId = Math.random().toString(36).substring(7);
@@ -120,43 +154,11 @@
   }
 
   let askBuyDialog = false;
-
-  // a list with motivationals quotes to show on the board
-  const motivationalsMessages = [
-    'Less than your morning coffee for stunning results!',
-    'Unlock premium quality for less than a dollar!',
-    'Elevate your image at minimal cost!',
-    'Invest in excellence for the price of a gum!',
-    'Transform your profile without breaking the bank!',
-    'Experience high definition for pocket change!',
-    'Why wait? Upgrade your avatar for less now!',
-    'Get professional looks for casual prices!',
-    "Don't miss out on a bargain upgrade!",
-    'Seize the HD difference for mere cents!'
-  ];
-
-  let motivationalMessage = '';
-
-  function getRandomMotivationalMessage(): string {
-    let message = '';
-    do {
-      message = motivationalsMessages[Math.floor(Math.random() * motivationalsMessages.length)];
-    } while (message === motivationalMessage);
-    return message;
-  }
-
-  motivationalMessage = getRandomMotivationalMessage();
-
-  onMount(() => {
-    const interval = setInterval(() => {
-      motivationalMessage = getRandomMotivationalMessage();
-    }, 5_000);
-    return () => clearInterval(interval);
-  });
 </script>
 
 <section
   class="top-0 flex flex-1 flex-col items-center justify-center gap-4 bg-base-200 p-4 md:sticky md:border-r md:border-neutral-content"
+  bind:this={board}
 >
   <div
     class="photos-border relative flex aspect-[4/3] w-full max-w-xl flex-col items-center justify-center gap-4 bg-base-100"
@@ -200,8 +202,8 @@
       </p>
 
       {#if $generationLoading || !imageLoaded}
-        <Typewriter  >
-          <p class="px-8 text-center text-lg font-semibold font-mono text-neutral-content">
+        <Typewriter>
+          <p class="px-8 text-center font-mono text-lg font-semibold text-neutral-content">
             {motivationalMessage}
           </p>
         </Typewriter>
@@ -275,4 +277,6 @@
       </div>
     </Dialog.Content>
   </Dialog.Root>
+
+  <Footer class="absolute hidden md:block" />
 </section>

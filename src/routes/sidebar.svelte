@@ -12,6 +12,7 @@
   import { blobImage, generatedImageID, generationLoading } from './store';
   import type { Session } from '@supabase/supabase-js';
   import { styles, type Styles } from './api/create-image/styles';
+  import Footer from '$lib/components/footer.svelte';
 
   // https://github.com/InstantID/InstantID/blob/main/assets/0.png
   // https://github.com/ahgsql/StyleSelectorXL/blob/main/sdxl_styles.json
@@ -276,6 +277,8 @@
       </Card.Content>
     </Card.Root>
   </div>
+
+  <Footer class="md:hidden" />
   <footer
     class="sticky bottom-0 flex flex-row justify-between border-t border-neutral-content bg-base-100 p-4"
   >
