@@ -9,6 +9,7 @@
   import { page } from '$app/stores';
   import { fade } from 'svelte/transition';
   import { toast } from 'svelte-sonner';
+  import Typewriter from 'svelte-typewriter';
 
   let checkout: StripeEmbeddedCheckout | null = null;
 
@@ -119,6 +120,39 @@
   }
 
   let askBuyDialog = false;
+
+  // a list with motivationals quotes to show on the board
+  const motivationalsMessages = [
+    'Less than your morning coffee for stunning results!',
+    'Unlock premium quality for less than a dollar!',
+    'Elevate your image at minimal cost!',
+    'Invest in excellence for the price of a gum!',
+    'Transform your profile without breaking the bank!',
+    'Experience high definition for pocket change!',
+    'Why wait? Upgrade your avatar for less now!',
+    'Get professional looks for casual prices!',
+    "Don't miss out on a bargain upgrade!",
+    'Seize the HD difference for mere cents!'
+  ];
+
+  let motivationalMessage = '';
+
+  function getRandomMotivationalMessage(): string {
+    let message = '';
+    do {
+      message = motivationalsMessages[Math.floor(Math.random() * motivationalsMessages.length)];
+    } while (message === motivationalMessage);
+    return message;
+  }
+
+  motivationalMessage = getRandomMotivationalMessage();
+
+  onMount(() => {
+    const interval = setInterval(() => {
+      motivationalMessage = getRandomMotivationalMessage();
+    }, 5_000);
+    return () => clearInterval(interval);
+  });
 </script>
 
 <section
@@ -164,6 +198,14 @@
           The generated photo will appear here
         {/if}
       </p>
+
+      {#if $generationLoading || !imageLoaded}
+        <Typewriter  >
+          <p class="px-8 text-center text-lg font-semibold font-mono text-neutral-content">
+            {motivationalMessage}
+          </p>
+        </Typewriter>
+      {/if}
     {/if}
   </div>
 
@@ -227,9 +269,6 @@
       }
     }}
   >
-    <Dialog.Trigger asChild let:builder>
-      <div builders={[builder]}></div>
-    </Dialog.Trigger>
     <Dialog.Content class="max-h-full max-w-[1100px] overflow-auto px-0 lg:max-h-[80%]">
       <div use:onShowStripe>
         <!-- Checkout will insert the payment form here -->
