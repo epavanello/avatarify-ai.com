@@ -15,8 +15,9 @@
   }
 </script>
 
-<header class="flex justify-between border-b border-neutral-content p-4">
+<header class="flex items-center justify-start gap-8 border-b border-neutral-content p-4">
   <h1 class="text-2xl font-bold">AvatarifyAI</h1>
+  <div class="flex-1"></div>
   <div class="flex space-x-4">
     <label class="swap swap-rotate">
       <!-- this hidden checkbox controls the state -->

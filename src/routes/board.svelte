@@ -157,9 +157,38 @@
 </script>
 
 <section
-  class="top-0 flex flex-1 flex-col items-center justify-center gap-4 bg-base-200 p-4 md:sticky md:border-r md:border-neutral-content"
+  class="top-0 flex flex-1 flex-col items-center justify-center gap-4 bg-base-200 p-4 md:sticky md:min-h-[520px] md:border-r md:border-neutral-content"
   bind:this={board}
 >
+  <div class="absolute top-8">
+    <a
+      href="https://www.producthunt.com/posts/avatarify-ai?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-avatarify&#0045;ai"
+      target="_blank"
+      class="hidden dark:hidden md:block"
+    >
+      <img
+        src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=440843&theme=light"
+        alt="Avatarify&#0032;AI - The&#0032;AI&#0045;powered&#0032;profile&#0032;photo&#0032;generator | Product Hunt"
+        style="width: 250px; height: 54px;"
+        width="250"
+        height="54"
+      />
+    </a>
+    <a
+      href="https://www.producthunt.com/posts/avatarify-ai?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-avatarify&#0045;ai"
+      target="_blank"
+      class="hidden dark:block"
+    >
+      <img
+        src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=440843&theme=neutral"
+        alt="Avatarify&#0032;AI - The&#0032;AI&#0045;powered&#0032;profile&#0032;photo&#0032;generator | Product Hunt"
+        style="width: 250px; height: 54px;"
+        width="250"
+        height="54"
+      />
+    </a>
+  </div>
+
   <div
     class="photos-border relative flex aspect-[4/3] w-full max-w-xl flex-col items-center justify-center gap-4 bg-base-100"
   >
