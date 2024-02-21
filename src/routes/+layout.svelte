@@ -25,5 +25,5 @@
 
 <slot />
 
-<ModeWatcher defaultMode={'light'}></ModeWatcher>
+<ModeWatcher defaultMode={'light'} track={false}></ModeWatcher>
 <Toaster richColors position="bottom-left" />
