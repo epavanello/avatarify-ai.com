@@ -8,7 +8,7 @@
     $$restProps.class
   )}
 >
-  Made with ❤️ by <a class="underline font-semibold" href="https://twitter.com/e_pavanello" target="_blank"
+  Made with ❤️ by <a class="underline font-semibold" href="https://twitter.com/emadev01" target="_blank"
     >EmaDev</a
   >
 </p>
