@@ -4,6 +4,8 @@
   import Google from '$lib/svg/google.svelte';
   import type { Session, SupabaseClient } from '@supabase/supabase-js';
   import { PUBLIC_WEBSITE_HOST } from '$env/static/public';
+  import { highlightLogin } from './store';
+  import * as Tooltip from '$lib/components/ui/tooltip';
 
   export let supabase: SupabaseClient;
   export let session: Session | null;
@@ -37,21 +39,26 @@
     </label>
 
     {#if !session?.user}
-      <DaisyButton
-        size="sm"
-        variant="neutral"
-        on:click={() => {
-          supabase.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-              redirectTo: `${PUBLIC_WEBSITE_HOST}/auth/callback`
-            }
-          });
-        }}
-      >
-        Sign in with Google
-        <Google slot="icon-left" />
-      </DaisyButton>
+      <Tooltip.Root bind:open={$highlightLogin}>
+        <Tooltip.Trigger>
+          <DaisyButton
+            size="sm"
+            variant="neutral"
+            on:click={() => {
+              supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                  redirectTo: `${PUBLIC_WEBSITE_HOST}/auth/callback`
+                }
+              });
+            }}
+          >
+            Sign in with Google
+            <Google slot="icon-left" />
+          </DaisyButton>
+        </Tooltip.Trigger>
+        <Tooltip.Content warning>Please login to generate an avatar</Tooltip.Content>
+      </Tooltip.Root>
     {:else}
       <DaisyButton
         size="sm"

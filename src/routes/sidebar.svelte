@@ -9,10 +9,17 @@
   import { toast } from 'svelte-sonner';
   import { cn } from '$lib/utils';
   import { tick } from 'svelte';
-  import { blobImage, generatedImageID, generationLoading } from './store';
+  import {
+    blobImage,
+    generatedImageID,
+    generationLoading,
+    highlighStyles,
+    highlightLogin
+  } from './store';
   import type { Session } from '@supabase/supabase-js';
   import { styles, type Styles } from './api/create-image/styles';
   import Footer from '$lib/components/footer.svelte';
+  import * as Tooltip from '$lib/components/ui/tooltip';
 
   // https://github.com/InstantID/InstantID/blob/main/assets/0.png
   // https://github.com/ahgsql/StyleSelectorXL/blob/main/sdxl_styles.json
@@ -60,11 +67,11 @@
       return;
     }
     if (!style) {
-      toast.warning('Please select a style');
+      highlighStyles.set(true);
       return;
     }
     if (!session?.user) {
-      toast.warning('Please login to generate image');
+      highlightLogin.set(true);
       return;
     }
     window.plausible('GenerateImage');
@@ -262,7 +269,12 @@
 
     <Card.Root>
       <Card.Header>
-        <Card.Title>Choose a style</Card.Title>
+        <Card.Title>
+          <Tooltip.Root bind:open={$highlighStyles}>
+            <Tooltip.Trigger>Choose a style</Tooltip.Trigger>
+            <Tooltip.Content warning>Please select a style</Tooltip.Content>
+          </Tooltip.Root>
+        </Card.Title>
         <Card.Description>
           Choose a style for your photo. The style will be applied to your photo to make it look
           unique.

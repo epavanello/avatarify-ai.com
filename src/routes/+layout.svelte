@@ -1,7 +1,6 @@
 <script lang="ts">
   import { invalidate } from '$app/navigation';
-  import { breakpoint } from '$lib/breakpoints';
-  import { Toaster } from '$lib/components/ui/sonner/index.js';
+  import { Toaster } from '$lib/components/ui/sonner';
   import { ModeWatcher } from 'mode-watcher';
   import { onMount } from 'svelte';
 

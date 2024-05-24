@@ -1,6 +1,6 @@
 import { browser } from '$app/environment';
 import { toBase64 } from '$lib/utils';
-import { writable } from 'svelte/store';
+import { writable, type Writable } from 'svelte/store';
 
 export const generatedImageID = writable((browser && localStorage.generatedImageID) || '');
 
@@ -16,6 +16,26 @@ generatedImageID.subscribe(async (value) => {
 
 export const generationLoading = writable(false);
 export const blobImage = writable<Blob | null>(null);
+export const highlightLogin = writable(false);
+export const highlighStyles = writable(false);
+
+function hanleToggleStore(store: Writable<boolean>) {
+  let storeTimeout: NodeJS.Timeout | null = null;
+  store.subscribe((value) => {
+    if (value) {
+      storeTimeout = setTimeout(() => {
+        store.set(false);
+      }, 3_000);
+    } else {
+      if (storeTimeout) {
+        clearTimeout(storeTimeout);
+        storeTimeout = null;
+      }
+    }
+  });
+}
+hanleToggleStore(highlightLogin);
+hanleToggleStore(highlighStyles);
 
 let skip = true;
 
