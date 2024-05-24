@@ -24,7 +24,7 @@
     'z-50 rounded-md border bg-popover px-3 py-1.5 text-sm text-popover-foreground shadow-md',
     className,
     {
-      'border-[#fdf5d3] bg-[#fffcf0] text-[#dc7609] text-xs': $$props.warning
+      'border-[#fdf5d3] bg-[#fffcf0] text-[#dc7609] text-sm': $$props.warning
     }
   )}
   {...$$restProps}
