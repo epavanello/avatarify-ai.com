@@ -17,7 +17,8 @@ generatedImageID.subscribe(async (value) => {
 export const generationLoading = writable(false);
 export const blobImage = writable<Blob | null>(null);
 export const highlightLogin = writable(false);
-export const highlighStyles = writable(false);
+export const highlightStyles = writable(false);
+export const highlightPhotoUpload = writable(false);
 
 function hanleToggleStore(store: Writable<boolean>) {
   let storeTimeout: NodeJS.Timeout | null = null;
@@ -35,7 +36,7 @@ function hanleToggleStore(store: Writable<boolean>) {
   });
 }
 hanleToggleStore(highlightLogin);
-hanleToggleStore(highlighStyles);
+hanleToggleStore(highlightStyles);
 
 let skip = true;
 

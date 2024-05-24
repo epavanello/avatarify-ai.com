@@ -13,8 +13,9 @@
     blobImage,
     generatedImageID,
     generationLoading,
-    highlighStyles,
-    highlightLogin
+    highlightStyles,
+    highlightLogin,
+    highlightPhotoUpload
   } from './store';
   import type { Session } from '@supabase/supabase-js';
   import { styles, type Styles } from './api/create-image/styles';
@@ -67,11 +68,11 @@
       return;
     }
     if (!$blobImage) {
-      toast.warning('Please upload a photo');
+      highlightPhotoUpload.set(true);
       return;
     }
     if (!style) {
-      highlighStyles.set(true);
+      highlightStyles.set(true);
       return;
     }
     window.plausible('GenerateImage');
@@ -193,14 +194,20 @@
       >
         <svelte:fragment slot="extraAction">
           <div class="divider my-2 text-xs">or</div>
-          <DaisyButton
-            label="Take a photo"
-            icon="camera_alt"
-            size="sm"
-            outline
-            class="mx-auto"
-            on:click={() => (capture = true)}
-          />
+
+          <Tooltip.Root bind:open={$highlightPhotoUpload}>
+            <Tooltip.Trigger>
+              <DaisyButton
+                label="Take a photo"
+                icon="camera_alt"
+                size="sm"
+                outline
+                class="mx-auto"
+                on:click={() => (capture = true)}
+              />
+            </Tooltip.Trigger>
+            <Tooltip.Content warning>Please upload a photo</Tooltip.Content>
+          </Tooltip.Root>
         </svelte:fragment>
         {#if capture}
           <div
@@ -270,7 +277,7 @@
     <Card.Root>
       <Card.Header>
         <Card.Title>
-          <Tooltip.Root bind:open={$highlighStyles}>
+          <Tooltip.Root bind:open={$highlightStyles}>
             <Tooltip.Trigger>Choose a style</Tooltip.Trigger>
             <Tooltip.Content warning>Please select a style</Tooltip.Content>
           </Tooltip.Root>
