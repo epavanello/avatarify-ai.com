@@ -6,6 +6,7 @@
   import { PUBLIC_WEBSITE_HOST } from '$env/static/public';
   import { highlightLogin } from './store';
   import * as Tooltip from '$lib/components/ui/tooltip';
+  import { breakpoint } from '$lib/breakpoints';
 
   export let supabase: SupabaseClient;
   export let session: Session | null;
@@ -53,7 +54,7 @@
               });
             }}
           >
-            Sign in with Google
+            {$breakpoint.mobile ? 'Login' : 'Login with Google'}
             <Google slot="icon-left" />
           </DaisyButton>
         </Tooltip.Trigger>
