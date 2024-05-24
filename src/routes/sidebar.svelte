@@ -62,16 +62,16 @@
 
   async function request() {
     window.plausible('TryGenerateImage');
+    if (!session?.user) {
+      highlightLogin.set(true);
+      return;
+    }
     if (!$blobImage) {
       toast.warning('Please upload a photo');
       return;
     }
     if (!style) {
       highlighStyles.set(true);
-      return;
-    }
-    if (!session?.user) {
-      highlightLogin.set(true);
       return;
     }
     window.plausible('GenerateImage');
