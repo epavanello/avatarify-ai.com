@@ -19,6 +19,7 @@
     variant?: 'default' | 'neutral' | 'primary' | 'secondary' | 'success' | 'warning' | 'error';
     size?: 'xs' | 'sm' | 'md' | 'lg';
     builders?: Builder[];
+    error?: boolean;
   } & HTMLButtonAttributes;
 
   export let label: $$Props['label'] = undefined;
@@ -31,8 +32,15 @@
   export let variant: $$Props['variant'] = 'default';
   export let size: $$Props['size'] = 'md';
   export let builders: $$Props['builders'] = undefined;
+  export let error: $$Props['error'] = false;
   let classes: $$Props['class'] = undefined;
   export { classes as class };
+
+  $: if (error) {
+    setTimeout(() => {
+      error = false;
+    }, 500);
+  }
 </script>
 
 <button
@@ -57,7 +65,8 @@
       'btn-warning': variant === 'warning',
       'btn-error': variant === 'error'
     },
-    classes
+    classes,
+    { error: error }
   )}
   disabled={loading}
   {...$$restProps}
@@ -67,6 +76,16 @@
       <Icon name={icon} {size} />
     {/if}
   </slot>
+  {#if loading && iconSide === 'left'}
+    <span
+      class={cn('loading loading-spinner aspect-square p-1', {
+        'w-3': size === 'xs',
+        'w-4': size === 'sm',
+        'w-5': size === 'md',
+        'w-6': size === 'lg'
+      })}
+    ></span>
+  {/if}
   {#if $$slots.default}
     <slot />
   {:else if label}
@@ -77,7 +96,7 @@
       <Icon name={icon} {size} />
     {/if}
   </slot>
-  {#if loading}
+  {#if loading && iconSide === 'right'}
     <span
       class={cn('loading loading-spinner aspect-square p-1', {
         'w-3': size === 'xs',
@@ -88,3 +107,34 @@
     ></span>
   {/if}
 </button>
+
+<style>
+  .btn {
+    animation: none;
+  }
+  .error {
+    animation: shake 0.3s linear;
+    animation-delay: 0.2s;
+  }
+
+  @keyframes shake {
+    0% {
+      transform: translate(16px);
+    }
+    20% {
+      transform: translate(-16px);
+    }
+    40% {
+      transform: translate(8px);
+    }
+    60% {
+      transform: translate(-8px);
+    }
+    80% {
+      transform: translate(4px);
+    }
+    100% {
+      transform: translate(0px);
+    }
+  }
+</style>

@@ -7,6 +7,7 @@ import stylesServer from './styles.server';
 import { PUBLIC_SUPABASE_URL, PUBLIC_WEBSITE_HOST } from '$env/static/public';
 import { v4 as uuidv4 } from 'uuid';
 import type { Database } from '$lib/supabase-types';
+import { dailyGenerationLimit } from '$lib/costants';
 
 const replicate = new Replicate({
   auth: PRIVATE_REPLICATE_API_TOKEN
@@ -14,8 +15,8 @@ const replicate = new Replicate({
 
 const supabaseAdmin = createClient<Database>(PUBLIC_SUPABASE_URL, PRIVATE_SUPABASE_SERVICE_ROLE);
 
-export const POST: RequestHandler = async ({ request, locals: { getSession } }) => {
-  const [data, session] = await Promise.all([request.formData(), getSession()]);
+export const POST: RequestHandler = async ({ request, locals: { session } }) => {
+  const data = await request.formData();
 
   const image = data.get('image');
   const style = stylesServer.find((s) => s.name === data.get('style'));
@@ -42,7 +43,7 @@ export const POST: RequestHandler = async ({ request, locals: { getSession } }) 
     .eq('day', today)
     .throwOnError();
 
-  if (count && count >= 10) {
+  if (count && count >= dailyGenerationLimit) {
     return error(429, 'Daily generation limit reached');
   }
 

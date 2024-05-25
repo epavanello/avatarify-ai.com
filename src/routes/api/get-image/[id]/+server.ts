@@ -7,9 +7,7 @@ import { PRIVATE_SUPABASE_SERVICE_ROLE } from '$env/static/private';
 
 const supabaseAdmin = createClient(PUBLIC_SUPABASE_URL, PRIVATE_SUPABASE_SERVICE_ROLE);
 
-export const GET: RequestHandler = async ({ params, locals: { getSession } }) => {
-  const session = await getSession();
-
+export const GET: RequestHandler = async ({ params, locals: { session } }) => {
   if (!session || !session.user) {
     return error(401, 'Unauthorized');
   }

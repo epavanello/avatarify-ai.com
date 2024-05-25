@@ -7,9 +7,9 @@
   export let data;
 </script>
 
-<Header supabase={data.supabase} session={data.session} />
+<Header supabase={data.supabase} user={data.user} />
 
 <main class="flex flex-1 flex-col overflow-auto md:flex-row">
-  <Board />
-  <Sidebar session={data.session} />
+  <Board user={data.user} />
+  <Sidebar user={data.user} dailyGeneratedImages={data.dailyGeneratedImages} />
 </main>

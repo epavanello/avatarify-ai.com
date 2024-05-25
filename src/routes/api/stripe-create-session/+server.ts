@@ -8,10 +8,10 @@ const stripe = new Stripe(PRIVATE_STRIPE_SECRET_KEY, {
   apiVersion: '2023-10-16'
 });
 
-export const POST: RequestHandler = async ({ request, locals: { getSession } }) => {
-  const [session, { id }] = await Promise.all([getSession(), request.json()]);
+export const POST: RequestHandler = async ({ request, locals: { session } }) => {
+  const { id } = await request.json();
 
-  if (!session || !session.user) {
+  if (!session || !session.user || !id) {
     return error(401, 'Unauthorized');
   }
 

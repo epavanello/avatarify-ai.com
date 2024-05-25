@@ -6,7 +6,6 @@ export const generatedImageID = writable((browser && localStorage.generatedImage
 
 generatedImageID.subscribe(async (value) => {
   if (browser) {
-    console.log('new value');
     localStorage.generatedImageID = value;
   }
 });
@@ -16,6 +15,7 @@ generatedImageID.subscribe(async (value) => {
 
 export const generationLoading = writable(false);
 export const blobImage = writable<Blob | null>(null);
+export const imageLoaded = writable(false);
 export const highlightLogin = writable(false);
 export const highlightStyles = writable(false);
 export const highlightPhotoUpload = writable(false);
@@ -37,6 +37,7 @@ function hanleToggleStore(store: Writable<boolean>) {
 }
 hanleToggleStore(highlightLogin);
 hanleToggleStore(highlightStyles);
+hanleToggleStore(highlightPhotoUpload);
 
 let skip = true;
 

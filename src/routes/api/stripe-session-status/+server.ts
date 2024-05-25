@@ -12,8 +12,7 @@ const stripe = new Stripe(PRIVATE_STRIPE_SECRET_KEY, {
 
 const supabaseAdmin = createClient<Database>(PUBLIC_SUPABASE_URL, PRIVATE_SUPABASE_SERVICE_ROLE);
 
-export const GET: RequestHandler = async ({ url, locals: { getSession } }) => {
-  const session = await getSession();
+export const GET: RequestHandler = async ({ url, locals: { session } }) => {
   const session_id = url.searchParams.get('session_id');
 
   if (!session || !session.user) {

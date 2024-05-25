@@ -12,6 +12,11 @@
   import Typewriter from 'svelte-typewriter';
   import { breakpoint } from '$lib/breakpoints';
   import Footer from '$lib/components/footer.svelte';
+  import type { User } from '@supabase/supabase-js';
+
+  export let user: User | null;
+  $: isLogged = !!user;
+  $: hasUsableImageID = !!$generatedImageID && isLogged;
 
   let checkout: StripeEmbeddedCheckout | null = null;
   let board: HTMLElement;
@@ -101,7 +106,7 @@
         // replace the url without session
         history.replaceState({}, document.title, '/');
       }
-    } else if ($generatedImageID) {
+    } else if (hasUsableImageID) {
       const checkResult = await (await fetch(`/api/check-payment/${$generatedImageID}`)).json();
       if (checkResult.ok) {
         canDownload = true;
@@ -121,11 +126,10 @@
     a.click();
   }
 
-  let imageLoaded = false;
-  let interval: NodeJS.Timeout;
+  let interval: ReturnType<typeof setInterval>;
   generatedImageID.subscribe(async (value) => {
     if (value) {
-      imageLoaded = false;
+      $generationLoading = true;
       canDownload = false;
       if ($breakpoint.mobile) {
         await tick();
@@ -145,12 +149,12 @@
         }
       }, 5000);
     } else {
-      imageLoaded = true;
+      $generationLoading = false;
     }
   });
   function onImageLoad() {
     console.log('image loaded');
-    imageLoaded = true;
+    $generationLoading = false;
   }
 
   let askBuyDialog = false;
@@ -166,6 +170,7 @@
       target="_blank"
       class="hidden dark:hidden md:block"
     >
+      <!-- svelte-ignore a11y-img-redundant-alt -->
       <img
         src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=440843&theme=light"
         alt="Avatarify&#0032;AI - The&#0032;AI&#0045;powered&#0032;profile&#0032;photo&#0032;generator | Product Hunt"
@@ -179,6 +184,7 @@
       target="_blank"
       class="hidden dark:block"
     >
+      <!-- svelte-ignore a11y-img-redundant-alt -->
       <img
         src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=440843&theme=neutral"
         alt="Avatarify&#0032;AI - The&#0032;AI&#0045;powered&#0032;profile&#0032;photo&#0032;generator | Product Hunt"
@@ -192,18 +198,18 @@
   <div
     class="photos-border relative flex aspect-[4/3] w-full max-w-xl flex-col items-center justify-center gap-4 bg-base-100"
   >
-    {#if $generationLoading || !imageLoaded}
+    {#if $generationLoading && hasUsableImageID}
       <span class="loading loading-infinity loading-lg"></span>
     {/if}
 
-    {#if $generatedImageID}
+    {#if hasUsableImageID}
       <img
         src={`${PUBLIC_WEBSITE_HOST}/api/get-image/${$generatedImageID}?_=${randomId}`}
         alt="Generated"
         class={cn(
           'absolute h-full w-full origin-bottom-left translate-y-0 rotate-0 rounded-lg object-cover opacity-100 transition-all',
           {
-            'opacity-0': !imageLoaded
+            'opacity-0': $generationLoading && hasUsableImageID
           }
         )}
         crossorigin="anonymous"
@@ -221,16 +227,16 @@
         }}
       ></div>
     {/if}
-    {#if $generationLoading || !imageLoaded || !$generatedImageID}
+    {#if $generationLoading || !hasUsableImageID}
       <p class="px-8 text-center text-2xl font-bold text-neutral-content">
-        {#if $generationLoading || !imageLoaded}
+        {#if $generationLoading && hasUsableImageID}
           Be patient, we are generating your photo...
         {:else}
           The generated photo will appear here
         {/if}
       </p>
 
-      {#if $generationLoading || !imageLoaded}
+      {#if $generationLoading && hasUsableImageID}
         <Typewriter>
           <p class="px-8 text-center font-mono text-lg font-semibold text-neutral-content">
             {motivationalMessage}
@@ -245,11 +251,11 @@
       variant="neutral"
       icon="download"
       class={cn({
-        invisible: !$generatedImageID
+        invisible: !hasUsableImageID
       })}
       on:click={download}>Download</DaisyButton
     >
-  {:else if imageLoaded}
+  {:else if hasUsableImageID}
     <Dialog.Root
       bind:open={askBuyDialog}
       onOpenChange={(isOpen) => {
@@ -264,7 +270,7 @@
           icon="lock"
           builders={[builder]}
           class={cn({
-            'hidden md:invisible': !$generatedImageID
+            'hidden md:invisible': !hasUsableImageID
           })}>Download</DaisyButton
         >
       </Dialog.Trigger>

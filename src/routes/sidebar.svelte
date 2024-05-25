@@ -17,23 +17,20 @@
     highlightLogin,
     highlightPhotoUpload
   } from './store';
-  import type { Session } from '@supabase/supabase-js';
+  import type { User } from '@supabase/supabase-js';
   import { styles, type Styles } from './api/create-image/styles';
   import Footer from '$lib/components/footer.svelte';
   import * as Tooltip from '$lib/components/ui/tooltip';
+  import { dailyGenerationLimit } from '$lib/costants';
+  import RollingDigits from '$lib/components/rolling-digits/rolling-digits.svelte';
 
   // https://github.com/InstantID/InstantID/blob/main/assets/0.png
   // https://github.com/ahgsql/StyleSelectorXL/blob/main/sdxl_styles.json
 
-  export let session: Session | null;
+  export let user: User | null;
+  export let dailyGeneratedImages = 0;
 
-  let surpriseMeLoading = false;
-  let generateLoading = false;
   $: previewImage = $blobImage ? URL.createObjectURL($blobImage) : '';
-
-  $: {
-    generationLoading.set(surpriseMeLoading || generateLoading);
-  }
 
   let dropZone: DropZone | undefined;
   let capture = false;
@@ -48,63 +45,62 @@
     }
   }
 
-  async function surpriseMe() {
-    style = styles[Math.floor(Math.random() * styles.length)];
-    surpriseMeLoading = true;
-    await request();
-    surpriseMeLoading = false;
-  }
+  let generateError = false;
 
   async function generate() {
-    generateLoading = true;
-    await request();
-    generateLoading = false;
-  }
-
-  async function request() {
     window.plausible('TryGenerateImage');
-    if (!session?.user) {
+    if (!user) {
       highlightLogin.set(true);
+      generateError = true;
       return;
     }
     if (!$blobImage) {
       highlightPhotoUpload.set(true);
+      generateError = true;
       return;
     }
     if (!style) {
       highlightStyles.set(true);
+      generateError = true;
       return;
     }
+    if ($generationLoading) return;
+    $generationLoading = true;
+    await tick();
     window.plausible('GenerateImage');
-    if (!$generationLoading) {
-      try {
-        generatedImageID.set('');
-        var data = new FormData();
-        data.append('image', $blobImage);
-        data.append('style', style);
+    dailyGeneratedImages += 1;
+    try {
+      generatedImageID.set('');
+      var data = new FormData();
+      data.append('image', $blobImage);
+      data.append('style', style);
 
-        const response = await fetch('/api/create-image', {
-          method: 'POST',
-          body: data
-        });
+      const response = await fetch('/api/create-image', {
+        method: 'POST',
+        body: data
+      });
+
+      if (response.status !== 200) {
+        dailyGeneratedImages -= 1;
+        $generationLoading = false;
 
         if (response.status === 429) {
           toast.error('You have reached the limit of image generation. Please try again tomorrow');
-          return;
-        } else if (response.status !== 200) {
+        } else {
           toast.error('Error generating image');
-          console.error('Error generating image', response);
-          return;
         }
-
-        const id = ((await response.json()) as { id: string }).id;
-        if (id) {
-          generatedImageID.set(id);
-        }
-      } catch (error) {
-        toast.error('Error generating image');
-        console.error('Error generating image', error);
+        return;
       }
+
+      const id = ((await response.json()) as { id: string }).id;
+      if (id) {
+        generatedImageID.set(id);
+      }
+    } catch (error) {
+      dailyGeneratedImages -= 1;
+      $generationLoading = false;
+      toast.error('Error generating image');
+      console.error('Error generating image', error);
     }
   }
 
@@ -177,7 +173,7 @@
   }
 </script>
 
-<aside class="flex w-full flex-col pt-8 md:max-w-sm">
+<aside class="flex w-full flex-col pt-8 md:max-w-md">
   <div class="flex flex-col gap-4 px-4 pb-4">
     <div class="grid gap-2">
       <Label role="button" for="picture">Your photo</Label>
@@ -288,7 +284,7 @@
         </Card.Description>
       </Card.Header>
       <Card.Content class="grid gap-6">
-        <RadioGroup.Root bind:value={style} class="grid grid-cols-2 gap-4">
+        <RadioGroup.Root bind:value={style} class="grid grid-cols-2 gap-4 sm:grid-cols-3">
           {#each styles as style}
             <StyleItem name={style} />
           {/each}
@@ -299,22 +295,25 @@
 
   <Footer class="md:hidden" />
   <footer
-    class="sticky bottom-0 flex flex-row justify-between border-t border-neutral-content bg-base-100 p-4"
+    class="sticky bottom-0 flex flex-col justify-between gap-4 border-t border-neutral-content bg-base-100 p-4 md:flex-row"
   >
     <DaisyButton
-      label="Surprise me"
-      icon="sync"
-      size="md"
-      on:click={surpriseMe}
-      loading={surpriseMeLoading}
-    />
-    <DaisyButton
-      label="Generate"
+      iconSide="left"
       icon="bolt"
       size="md"
+      class="flex-1"
       variant="neutral"
       on:click={generate}
-      loading={generateLoading}
-    />
+      loading={$generationLoading && !!user}
+      bind:error={generateError}
+    >
+      Generate preview <RollingDigits
+        value={dailyGenerationLimit - dailyGeneratedImages}
+        class="rounded-sm bg-black/10 px-1 dark:bg-white/15"
+      />
+    </DaisyButton>
+    <!-- <DaisyButton iconSide="left" icon="shopping_cart" variant="neutral" size="md" class="flex-1"
+      >Buy credits <RollingDigits value={0} class="rounded-sm bg-white/25 px-1" /></DaisyButton
+    > -->
   </footer>
 </aside>

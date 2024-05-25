@@ -2,14 +2,14 @@
   import Icon from '$lib/icon.svelte';
   import DaisyButton from '$lib/components/daisy/daisy-button.svelte';
   import Google from '$lib/svg/google.svelte';
-  import type { Session, SupabaseClient } from '@supabase/supabase-js';
+  import type { User, SupabaseClient } from '@supabase/supabase-js';
   import { PUBLIC_WEBSITE_HOST } from '$env/static/public';
   import { highlightLogin } from './store';
   import * as Tooltip from '$lib/components/ui/tooltip';
   import { breakpoint } from '$lib/breakpoints';
 
   export let supabase: SupabaseClient;
-  export let session: Session | null;
+  export let user: User | null;
 
   function toggleTheme(dark: boolean) {
     const theme = document.documentElement.getAttribute('data-theme') || 'light';
@@ -39,7 +39,7 @@
       <Icon name="dark_mode" class="swap-off" size="lg" />
     </label>
 
-    {#if !session?.user}
+    {#if !user}
       <Tooltip.Root bind:open={$highlightLogin}>
         <Tooltip.Trigger>
           <DaisyButton
@@ -66,8 +66,8 @@
         variant="neutral"
         icon="logout"
         iconSide="left"
-        on:click={() => {
-          supabase.auth.signOut();
+        on:click={async () => {
+          await supabase.auth.signOut();
         }}
       >
         Sign out

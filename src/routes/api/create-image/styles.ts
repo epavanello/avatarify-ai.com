@@ -12,7 +12,7 @@ export const styles = [
   'Enhance',
   'Fantasy Art',
   'Origami',
-  '3D Model',
+  '3D Model'
 ] as const;
 /*
 [
