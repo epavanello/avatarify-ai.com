@@ -7,3 +7,8 @@
 - [x] Handle payments
 - [ ] Mobile version
 - [ ] Rate limit
+
+
+
+delete expired images
+add paywall

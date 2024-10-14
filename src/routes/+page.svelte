@@ -11,5 +11,5 @@
 
 <main class="flex flex-1 flex-col overflow-auto md:flex-row">
   <Board user={data.user} />
-  <Sidebar user={data.user} dailyGeneratedImages={data.dailyGeneratedImages} />
+  <Sidebar user={data.user} />
 </main>

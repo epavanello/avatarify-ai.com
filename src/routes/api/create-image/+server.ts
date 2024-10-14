@@ -74,6 +74,7 @@ export const POST: RequestHandler = async ({ request, locals: { session } }) => 
       })
       .throwOnError();
 
+    // https://replicate.com/collections/use-face-to-make-images
     const output = await replicate.predictions.create({
       version: '6af8583c541261472e92155d87bba80d5ad98461665802f2ba196ac099aaedc9',
       webhook: `${PUBLIC_WEBSITE_HOST}/api/replicate-webhook`,
@@ -109,6 +110,12 @@ export const POST: RequestHandler = async ({ request, locals: { session } }) => 
       console.error(output.error);
       return error(500, 'Replicate error');
     }
+
+    await supabaseAdmin
+      .from('user_payments')
+      .update({ remaining_generations: remaining_generations - 1 })
+      .eq('user_id', session.user.id)
+      .throwOnError();
 
     return new Response(
       JSON.stringify({

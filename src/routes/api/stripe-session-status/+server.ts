@@ -36,6 +36,14 @@ export const GET: RequestHandler = async ({ url, locals: { session } }) => {
           stripe_session_id: stripeSession.id
         })
         .throwOnError();
+
+      await supabaseAdmin
+        .from('user_payments')
+        .upsert({
+          user_id: session.user.id,
+          remaining_generations: 10
+        })
+        .throwOnError();
     }
 
     return new Response(

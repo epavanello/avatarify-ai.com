@@ -8,7 +8,7 @@
   import DropZone from '$lib/components/drop-zone.svelte';
   import { toast } from 'svelte-sonner';
   import { cn } from '$lib/utils';
-  import { tick } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import {
     blobImage,
     generatedImageID,
@@ -28,7 +28,18 @@
   // https://github.com/ahgsql/StyleSelectorXL/blob/main/sdxl_styles.json
 
   export let user: User | null;
-  export let dailyGeneratedImages = 0;
+
+  let hasPaid = false;
+  let remainingGenerations = 0;
+
+  async function checkPaymentStatus() {
+    const response = await fetch('/api/check-payment-status');
+    const data = await response.json();
+    hasPaid = data.hasPaid;
+    remainingGenerations = data.remainingGenerations;
+  }
+
+  onMount(checkPaymentStatus);
 
   $: previewImage = $blobImage ? URL.createObjectURL($blobImage) : '';
 
@@ -49,6 +60,15 @@
 
   async function generate() {
     window.plausible('TryGenerateImage');
+    if (!hasPaid) {
+      highlightLogin.set(true);
+      generateError = true;
+      return;
+    }
+    if (remainingGenerations <= 0) {
+      toast.error('You have used all your generations. Please purchase more.');
+      return;
+    }
     if (!user) {
       highlightLogin.set(true);
       generateError = true;
@@ -68,7 +88,8 @@
     $generationLoading = true;
     await tick();
     window.plausible('GenerateImage');
-    dailyGeneratedImages += 1;
+
+    remainingGenerations--;
     try {
       generatedImageID.set('');
       var data = new FormData();
@@ -81,7 +102,7 @@
       });
 
       if (response.status !== 200) {
-        dailyGeneratedImages -= 1;
+        remainingGenerations++;
         $generationLoading = false;
 
         if (response.status === 429) {
@@ -97,7 +118,7 @@
         generatedImageID.set(id);
       }
     } catch (error) {
-      dailyGeneratedImages -= 1;
+      remainingGenerations++;
       $generationLoading = false;
       toast.error('Error generating image');
       console.error('Error generating image', error);
