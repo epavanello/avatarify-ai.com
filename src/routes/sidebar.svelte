@@ -21,22 +21,72 @@
   import { styles, type Styles } from './api/create-image/styles';
   import Footer from '$lib/components/footer.svelte';
   import * as Tooltip from '$lib/components/ui/tooltip';
-  import { dailyGenerationLimit } from '$lib/costants';
   import RollingDigits from '$lib/components/rolling-digits/rolling-digits.svelte';
+  import { derived } from 'svelte/store';
+  import * as Dialog from '$lib/components/ui/dialog';
+  import { loadStripe, type StripeEmbeddedCheckout } from '@stripe/stripe-js';
+  import { PUBLIC_STRIPE_PUBLISHABLE_KEY } from '$env/static/public';
 
   // https://github.com/InstantID/InstantID/blob/main/assets/0.png
   // https://github.com/ahgsql/StyleSelectorXL/blob/main/sdxl_styles.json
 
-  export let user: User | null;
-  export let dailyGeneratedImages = 0;
+  let {
+    user,
+    remainingGenerations
+  }: {
+    user: User | null;
+    remainingGenerations: number;
+  } = $props();
 
-  $: previewImage = $blobImage ? URL.createObjectURL($blobImage) : '';
+  let dropZone: DropZone | undefined = $state();
+  let capture = $state(false);
+  let cameraIsReady = $state(false);
+  let video: HTMLVideoElement | undefined = $state();
+  let mouseOverDropZone = $state(false);
+  let style: Styles | '' = $state('');
+  let generateError = $state(false);
+  let buyError = $state(false);
+  let stream: MediaStream | undefined = $state();
+  let askBuyDialog = $state(false);
+  let checkout: StripeEmbeddedCheckout | null = null;
+  let showStripe = $state(false);
 
-  let dropZone: DropZone | undefined;
-  let capture = false;
-  let cameraIsReady = false;
-  let video: HTMLVideoElement | undefined;
-  let mouseOverDropZone = false;
+  async function buyCredit() {
+    window.plausible?.('OpenStripeCheckout');
+    askBuyDialog = false;
+    const stripe = await loadStripe(PUBLIC_STRIPE_PUBLISHABLE_KEY);
+    if (!stripe) {
+      console.error('Stripe not loaded');
+      return;
+    }
+
+    const response = await fetch('/api/stripe-create-session', {
+      method: 'POST',
+      body: JSON.stringify({})
+    });
+    const { clientSecret } = await response.json();
+
+    // Initialize Checkout
+    checkout = await stripe.initEmbeddedCheckout({
+      clientSecret
+    });
+    showStripe = true;
+  }
+
+  function onShowStripe(el: HTMLDivElement) {
+    if (el && checkout) {
+      checkout.mount(el);
+    }
+    return {
+      destroy() {
+        if (checkout) {
+          checkout.destroy();
+        }
+      }
+    };
+  }
+
+  const previewImage = derived(blobImage, (val) => (val ? URL.createObjectURL(val) : ''));
 
   function handleImageUpload(file?: File) {
     if (file) {
@@ -45,10 +95,12 @@
     }
   }
 
-  let generateError = false;
-
   async function generate() {
-    window.plausible('TryGenerateImage');
+    window.plausible?.('TryGenerateImage');
+    if (remainingGenerations <= 0) {
+      toast.error('You have used all your generations. Please purchase more.');
+      return;
+    }
     if (!user) {
       highlightLogin.set(true);
       generateError = true;
@@ -67,8 +119,9 @@
     if ($generationLoading) return;
     $generationLoading = true;
     await tick();
-    window.plausible('GenerateImage');
-    dailyGeneratedImages += 1;
+    window.plausible?.('GenerateImage');
+
+    remainingGenerations--;
     try {
       generatedImageID.set('');
       var data = new FormData();
@@ -81,7 +134,7 @@
       });
 
       if (response.status !== 200) {
-        dailyGeneratedImages -= 1;
+        remainingGenerations++;
         $generationLoading = false;
 
         if (response.status === 429) {
@@ -91,13 +144,12 @@
         }
         return;
       }
-
       const id = ((await response.json()) as { id: string }).id;
       if (id) {
         generatedImageID.set(id);
       }
     } catch (error) {
-      dailyGeneratedImages -= 1;
+      remainingGenerations++;
       $generationLoading = false;
       toast.error('Error generating image');
       console.error('Error generating image', error);
@@ -110,8 +162,6 @@
     blobImage.set(null);
   }
 
-  let stream: MediaStream | undefined;
-  let style: Styles | '' = '';
   async function startCapture() {
     await tick();
     if (video) {
@@ -168,9 +218,11 @@
     }
   }
 
-  $: if (capture) {
-    startCapture();
-  }
+  $effect(() => {
+    if (capture) {
+      startCapture();
+    }
+  });
 </script>
 
 <aside class="flex w-full flex-col pt-8 md:max-w-md">
@@ -183,28 +235,33 @@
         extenstions={['png', 'jpg', 'jpeg']}
         maxFileSize={1024}
         mediaType="image/*"
-        on:fileChange={(e) => handleImageUpload(e.detail)}
-        on:mouseenter={() => (mouseOverDropZone = true)}
-        on:mouseleave={() => (mouseOverDropZone = false)}
+        fileChange={(file) => handleImageUpload(file)}
+        onmouseenter={() => (mouseOverDropZone = true)}
+        onmouseleave={() => (mouseOverDropZone = false)}
         disabled={!!$blobImage || capture}
       >
-        <svelte:fragment slot="extraAction">
+        {#snippet extraAction()}
           <div class="divider my-2 text-xs">or</div>
 
-          <Tooltip.Root bind:open={$highlightPhotoUpload}>
-            <Tooltip.Trigger>
-              <DaisyButton
-                label="Take a photo"
-                icon="camera_alt"
-                size="sm"
-                outline
-                class="mx-auto"
-                on:click={() => (capture = true)}
-              />
-            </Tooltip.Trigger>
-            <Tooltip.Content warning>Please upload a photo</Tooltip.Content>
-          </Tooltip.Root>
-        </svelte:fragment>
+          <Tooltip.Provider>
+            <Tooltip.Root bind:open={$highlightPhotoUpload}>
+              <Tooltip.Trigger>
+                {#snippet child({ props })}
+                  <DaisyButton
+                    {...props}
+                    label="Take a photo"
+                    icon="camera_alt"
+                    size="sm"
+                    outline
+                    class="mx-auto"
+                    onclick={() => (capture = true)}
+                  />
+                {/snippet}
+              </Tooltip.Trigger>
+              <Tooltip.Content warning>Please upload a photo</Tooltip.Content>
+            </Tooltip.Root>
+          </Tooltip.Provider>
+        {/snippet}
         {#if capture}
           <div
             class="absolute inset-0 flex items-center justify-center overflow-hidden rounded-lg bg-base-100"
@@ -218,7 +275,7 @@
               class="absolute h-full w-full"
               autoplay
               playsinline
-              on:click={shoot}
+              onclick={shoot}
             >
               <track kind="captions" />
             </video>
@@ -228,18 +285,18 @@
               circle
               variant="neutral"
               class="absolute right-1 top-1"
-              on:click={closeCameraPreview}
+              onclick={closeCameraPreview}
             />
             <DaisyButton
               label="Capture"
               icon="camera_alt"
               size="xs"
               class="absolute bottom-2 right-2"
-              on:click={shoot}
+              onclick={shoot}
             />
           </div>
         {/if}
-        {#if previewImage}
+        {#if $previewImage}
           <div class="absolute inset-0 bg-base-100">
             <div
               class="absolute inset-0"
@@ -252,10 +309,10 @@
                 circle
                 variant="neutral"
                 class="absolute right-1 top-1"
-                on:click={reset}
+                onclick={reset}
               />
               <img
-                src={previewImage}
+                src={$previewImage}
                 alt="Preview"
                 class={cn(
                   'absolute h-full w-full origin-bottom-left translate-y-0 rotate-0 rounded-lg object-cover transition-all ',
@@ -273,10 +330,12 @@
     <Card.Root>
       <Card.Header>
         <Card.Title>
-          <Tooltip.Root bind:open={$highlightStyles}>
-            <Tooltip.Trigger>Choose a style</Tooltip.Trigger>
-            <Tooltip.Content warning>Please select a style</Tooltip.Content>
-          </Tooltip.Root>
+          <Tooltip.Provider>
+            <Tooltip.Root bind:open={$highlightStyles}>
+              <Tooltip.Trigger>Choose a style</Tooltip.Trigger>
+              <Tooltip.Content warning>Please select a style</Tooltip.Content>
+            </Tooltip.Root>
+          </Tooltip.Provider>
         </Card.Title>
         <Card.Description>
           Choose a style for your photo. The style will be applied to your photo to make it look
@@ -297,23 +356,78 @@
   <footer
     class="sticky bottom-0 flex flex-col justify-between gap-4 border-t border-neutral-content bg-base-100 p-4 md:flex-row"
   >
-    <DaisyButton
-      iconSide="left"
-      icon="bolt"
-      size="md"
-      class="flex-1"
-      variant="neutral"
-      on:click={generate}
-      loading={$generationLoading && !!user}
-      bind:error={generateError}
-    >
-      Generate preview <RollingDigits
-        value={dailyGenerationLimit - dailyGeneratedImages}
-        class="rounded-sm bg-black/10 px-1 dark:bg-white/15"
-      />
-    </DaisyButton>
-    <!-- <DaisyButton iconSide="left" icon="shopping_cart" variant="neutral" size="md" class="flex-1"
-      >Buy credits <RollingDigits value={0} class="rounded-sm bg-white/25 px-1" /></DaisyButton
-    > -->
+    <div class="flex w-full flex-col gap-4">
+      {#if !user}
+        <p class="text-center text-sm text-error">
+          Please login to generate previews and buy credits
+        </p>
+      {/if}
+      <div class="flex w-full gap-2">
+        <DaisyButton
+          iconSide="left"
+          icon="bolt"
+          size="md"
+          class="flex-1"
+          variant="neutral"
+          onclick={generate}
+          loading={$generationLoading && !!user}
+          bind:error={generateError}
+        >
+          Generate <RollingDigits
+            value={remainingGenerations}
+            class="rounded-sm bg-black/10 px-1 dark:bg-white/15"
+          />
+        </DaisyButton>
+        <DaisyButton
+          iconSide="left"
+          icon="shopping_cart"
+          variant="neutral"
+          size="md"
+          class="flex-1"
+          onclick={() => {
+            if (!user) {
+              highlightLogin.set(true);
+              buyError = true;
+              return;
+            }
+            askBuyDialog = true;
+          }}
+          bind:error={buyError}
+        >
+          Buy credits
+        </DaisyButton>
+      </div>
+    </div>
+
+    <Dialog.Root bind:open={askBuyDialog}>
+      <Dialog.Content class="max-w-md overflow-auto">
+        <Dialog.Header>
+          <Dialog.Title>Buy more credits</Dialog.Title>
+          <Dialog.Description>
+            Get more credits to generate amazing AI avatars. Each credit allows you to generate one
+            preview.
+          </Dialog.Description>
+        </Dialog.Header>
+        <div class="flex flex-row justify-between">
+          <DaisyButton
+            size="sm"
+            onclick={() => {
+              askBuyDialog = false;
+            }}>Cancel</DaisyButton
+          >
+          <DaisyButton variant="primary" size="sm" icon="sell" onclick={buyCredit}
+            >Buy now
+          </DaisyButton>
+        </div>
+      </Dialog.Content>
+    </Dialog.Root>
   </footer>
+
+  <Dialog.Root bind:open={showStripe}>
+    <Dialog.Content class="max-h-full max-w-[1100px] overflow-auto px-0 lg:max-h-[80%]">
+      <div use:onShowStripe>
+        <!-- Checkout will insert the payment form here -->
+      </div>
+    </Dialog.Content>
+  </Dialog.Root>
 </aside>

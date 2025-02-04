@@ -4,8 +4,8 @@
   import { ModeWatcher } from 'mode-watcher';
   import { onMount } from 'svelte';
 
-  export let data;
-  $: ({ session, supabase } = data);
+  let { data, children } = $props();
+  let { session, supabase } = $derived(data);
 
   onMount(() => {
     const { data } = supabase.auth.onAuthStateChange((_, newSession) => {
@@ -27,7 +27,7 @@
   });
 </script>
 
-<slot />
+{@render children?.()}
 
 <ModeWatcher defaultMode={'light'} track={false}></ModeWatcher>
 <Toaster richColors position="bottom-left" />

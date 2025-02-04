@@ -1,6 +1,5 @@
-import { error } from '@sveltejs/kit';
+import { error, type RequestHandler } from '@sveltejs/kit';
 import { type Prediction } from 'replicate';
-import type { RequestHandler } from '../$types';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/supabase-types';
 import { PUBLIC_SUPABASE_URL } from '$env/static/public';

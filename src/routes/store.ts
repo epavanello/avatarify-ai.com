@@ -2,11 +2,27 @@ import { browser } from '$app/environment';
 import { toBase64 } from '$lib/utils';
 import { writable, type Writable } from 'svelte/store';
 
-export const generatedImageID = writable((browser && localStorage.generatedImageID) || '');
+export const generatedImageID = writable<string>(
+  (browser &&
+    (() => {
+      const storedID = localStorage.generatedImageID;
+      const timestamp = localStorage.generatedImageIDTimestamp;
+      const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
 
-generatedImageID.subscribe(async (value) => {
+      if (storedID && timestamp && parseInt(timestamp) > fiveMinutesAgo) {
+        return storedID;
+      }
+      return '';
+    })()) ||
+    ''
+);
+
+generatedImageID.subscribe((value: string) => {
   if (browser) {
     localStorage.generatedImageID = value;
+    if (value) {
+      localStorage.generatedImageIDTimestamp = Date.now().toString();
+    }
   }
 });
 

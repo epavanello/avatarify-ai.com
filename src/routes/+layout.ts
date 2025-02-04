@@ -41,5 +41,5 @@ export const load = async ({ fetch, data, depends }) => {
     data: { user }
   } = await supabase.auth.getUser();
 
-  return { session, supabase, user, dailyGeneratedImages: data.dailyGeneratedImages };
+  return { session, supabase, user };
 };

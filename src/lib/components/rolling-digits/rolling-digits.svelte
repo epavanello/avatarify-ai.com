@@ -2,16 +2,19 @@
   import Digit from './digit.svelte';
   import { cn } from '$lib/utils';
 
-  export let value: number;
-  export let fontSize = 14;
-  export let lineHeight = 20;
-  let classes = '';
-  export { classes as class };
+  interface Props {
+    value: number;
+    fontSize?: number;
+    lineHeight?: number;
+    class?: string;
+  }
 
-  $: digits = value.toString().split('').map(Number);
+  let { value, fontSize = 14, lineHeight = 20, class: classes = '' }: Props = $props();
+
+  let digits = $derived(value.toString().split('').map(Number));
 </script>
 
-<span class={cn('digits', classes)} aria-label={value}>
+<span class={cn('digits', classes)} aria-label={`${value}`}>
   {#each digits as digit, i (digits.length - i)}
     <Digit value={digit} {fontSize} {lineHeight} />
   {/each}
