@@ -7,9 +7,9 @@ const supabaseAdmin = createClient<Database>(PUBLIC_SUPABASE_URL, PRIVATE_SUPABA
 
 export async function load({ locals: { session }, depends }) {
   depends('app:images');
-
   if (session?.user) {
-    const [{ data: paymentData }, { data: files }] = await Promise.all([
+    // Get user payment data and files in parallel
+    let [{ data: paymentData }, { data: files }] = await Promise.all([
       supabaseAdmin
         .from('user_payments')
         .select('remaining_generations')
@@ -19,6 +19,20 @@ export async function load({ locals: { session }, depends }) {
         sortBy: { column: 'created_at', order: 'desc' }
       })
     ]);
+
+    // If no payment record exists, create one with 2 remaining generations
+    if (!paymentData) {
+      const { data: newPaymentData } = await supabaseAdmin
+        .from('user_payments')
+        .insert({
+          user_id: session.user.id,
+          remaining_generations: 2
+        })
+        .select('remaining_generations')
+        .single();
+
+      paymentData = newPaymentData;
+    }
 
     const images = files
       ? await Promise.all(

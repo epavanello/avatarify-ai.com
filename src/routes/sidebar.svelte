@@ -415,9 +415,7 @@
               askBuyDialog = false;
             }}>Cancel</DaisyButton
           >
-          <DaisyButton variant="primary" size="sm" icon="sell" onclick={buyCredit}
-            >Buy now
-          </DaisyButton>
+          <DaisyButton size="sm" icon="sell" onclick={buyCredit}>Buy now</DaisyButton>
         </div>
       </Dialog.Content>
     </Dialog.Root>
