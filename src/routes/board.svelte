@@ -155,7 +155,7 @@
     <a
       href="https://www.producthunt.com/posts/avatarify-ai?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-avatarify&#0045;ai"
       target="_blank"
-      class="hidden dark:block"
+      class="hidden dark:md:block"
     >
       <!-- svelte-ignore a11y_img_redundant_alt -->
       <img
