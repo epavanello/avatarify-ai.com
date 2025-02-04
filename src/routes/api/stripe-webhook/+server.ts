@@ -10,7 +10,7 @@ import {
 import Stripe from 'stripe';
 
 const stripe = new Stripe(PRIVATE_STRIPE_SECRET_KEY, {
-  apiVersion: '2023-10-16'
+  apiVersion: '2025-01-27.acacia'
 });
 
 const supabaseAdmin = createClient<Database>(PUBLIC_SUPABASE_URL, PRIVATE_SUPABASE_SERVICE_ROLE);

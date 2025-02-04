@@ -3,7 +3,7 @@ import tailwindCssDebugScreens from 'tailwindcss-debug-screens';
 
 /** @type {import('tailwindcss').Config} */
 export default {
-  darkMode: ['class'],
+  darkMode: ['selector', '[data-theme="dark"]'],
   content: ['./src/**/*.{html,js,svelte,ts}'],
   safelist: ['dark'],
   daisyui: {

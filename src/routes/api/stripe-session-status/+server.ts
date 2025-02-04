@@ -3,7 +3,7 @@ import Stripe from 'stripe';
 import { PRIVATE_STRIPE_SECRET_KEY } from '$env/static/private';
 
 const stripe = new Stripe(PRIVATE_STRIPE_SECRET_KEY, {
-  apiVersion: '2023-10-16'
+  apiVersion: '2025-01-27.acacia'
 });
 
 export const GET: RequestHandler = async ({ url, locals: { session } }) => {

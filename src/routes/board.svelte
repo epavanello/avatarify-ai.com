@@ -10,7 +10,6 @@
   import type { User } from '@supabase/supabase-js';
   import { tick } from 'svelte';
   import { invalidate } from '$app/navigation';
-  import Icon from '$lib/icon.svelte';
 
   interface Props {
     user: User | null;

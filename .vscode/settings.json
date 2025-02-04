@@ -1,3 +1,4 @@
 {
-	"eslint.validate": ["javascript", "javascriptreact", "svelte"]
+  "eslint.validate": ["javascript", "javascriptreact", "svelte"],
+  "typescript.tsserver.experimental.enableProjectDiagnostics": true
 }

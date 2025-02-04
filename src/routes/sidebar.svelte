@@ -68,6 +68,7 @@
     checkout = await stripe.initEmbeddedCheckout({
       clientSecret
     });
+
     showStripe = true;
   }
 
@@ -399,7 +400,10 @@
   </footer>
 
   <Dialog.Root bind:open={showStripe}>
-    <Dialog.Content class="max-h-full max-w-[1100px] overflow-auto px-0 lg:max-h-[80%]">
+    <Dialog.Content
+      class="max-h-full max-w-[1100px] overflow-auto bg-white px-0 lg:max-h-[80%]"
+      data-theme="light"
+    >
       <div use:onShowStripe>
         <!-- Checkout will insert the payment form here -->
       </div>

@@ -4,7 +4,7 @@ import { PRIVATE_STRIPE_SECRET_KEY } from '$env/static/private';
 import { PUBLIC_STRIPE_PRICE_ID, PUBLIC_WEBSITE_HOST } from '$env/static/public';
 
 const stripe = new Stripe(PRIVATE_STRIPE_SECRET_KEY, {
-  apiVersion: '2023-10-16'
+  apiVersion: '2025-01-27.acacia'
 });
 
 export const POST: RequestHandler = async ({ locals: { session } }) => {
