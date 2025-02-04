@@ -226,7 +226,7 @@
     <DaisyButton variant="neutral" icon="download" onclick={download}>Download</DaisyButton>
   {/if}
 
-  {#if user}
+  {#if user && (images.length > 0 || $generationLoading)}
     <div class="carousel carousel-center mt-4 max-w-xl space-x-4 rounded-box bg-neutral p-4">
       <!-- svelte-ignore a11y_click_events_have_key_events -->
       {#if $generatedImageID && $generationLoading}
