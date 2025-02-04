@@ -30,4 +30,10 @@
 {@render children?.()}
 
 <ModeWatcher defaultMode={'light'} track={false}></ModeWatcher>
-<Toaster richColors position="bottom-left" />
+<Toaster
+  richColors
+  toastOptions={{
+    class: 'my-toast'
+  }}
+  position="bottom-left"
+/>
