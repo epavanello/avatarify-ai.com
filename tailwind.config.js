@@ -7,7 +7,8 @@ export default {
   content: ['./src/**/*.{html,js,svelte,ts}'],
   safelist: ['dark'],
   daisyui: {
-    themes: ['light', 'dark']
+    themes: ['light', 'dark'],
+    darkTheme: false
   },
   theme: {
     container: {
