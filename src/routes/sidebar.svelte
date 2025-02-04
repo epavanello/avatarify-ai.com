@@ -47,13 +47,11 @@
   let generateError = $state(false);
   let buyError = $state(false);
   let stream: MediaStream | undefined = $state();
-  let askBuyDialog = $state(false);
   let checkout: StripeEmbeddedCheckout | null = null;
   let showStripe = $state(false);
 
   async function buyCredit() {
     window.plausible?.('OpenStripeCheckout');
-    askBuyDialog = false;
     const stripe = await loadStripe(PUBLIC_STRIPE_PUBLISHABLE_KEY);
     if (!stripe) {
       console.error('Stripe not loaded');
@@ -390,7 +388,7 @@
               buyError = true;
               return;
             }
-            askBuyDialog = true;
+            buyCredit();
           }}
           bind:error={buyError}
         >
@@ -398,27 +396,6 @@
         </DaisyButton>
       </div>
     </div>
-
-    <Dialog.Root bind:open={askBuyDialog}>
-      <Dialog.Content class="max-w-md overflow-auto">
-        <Dialog.Header>
-          <Dialog.Title>Buy more credits</Dialog.Title>
-          <Dialog.Description>
-            Get more credits to generate amazing AI avatars. Each credit allows you to generate one
-            preview.
-          </Dialog.Description>
-        </Dialog.Header>
-        <div class="flex flex-row justify-between">
-          <DaisyButton
-            size="sm"
-            onclick={() => {
-              askBuyDialog = false;
-            }}>Cancel</DaisyButton
-          >
-          <DaisyButton size="sm" icon="sell" onclick={buyCredit}>Buy now</DaisyButton>
-        </div>
-      </Dialog.Content>
-    </Dialog.Root>
   </footer>
 
   <Dialog.Root bind:open={showStripe}>
