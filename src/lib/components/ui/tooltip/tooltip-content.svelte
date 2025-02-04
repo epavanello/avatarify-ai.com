@@ -1,38 +1,23 @@
 <script lang="ts">
   import { Tooltip as TooltipPrimitive } from 'bits-ui';
-  import { cn, flyAndScale } from '$lib/utils';
+  import { cn } from '$lib/utils.js';
 
-  type $$Props = TooltipPrimitive.ContentProps & {
-    warning?: boolean;
-  };
-
-  let className: $$Props['class'] = undefined;
-  export let sideOffset: $$Props['sideOffset'] = 4;
-  export let transition: $$Props['transition'] = flyAndScale;
-  export let transitionConfig: $$Props['transitionConfig'] = {
-    y: 8,
-    duration: 150
-  };
-  export { className as class };
+  let {
+    ref = $bindable(null),
+    class: className,
+    sideOffset = 4,
+    warning,
+    ...restProps
+  }: TooltipPrimitive.ContentProps & { warning?: boolean } = $props();
 </script>
 
 <TooltipPrimitive.Content
-  {transition}
-  {transitionConfig}
+  bind:ref
   {sideOffset}
   class={cn(
-    'z-50 rounded-md border bg-popover px-3 py-1.5 text-sm text-popover-foreground shadow-md',
-    className,
-    {
-      'border-[#fdf5d3] bg-[#fffcf0] text-[#dc7609] text-sm': $$props.warning
-    }
+    'animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 overflow-hidden rounded-md border bg-popover px-3 py-1.5 text-sm text-popover-foreground shadow-md',
+    { 'border-[#fdf5d3] bg-[#fffcf0] text-[#dc7609]': warning },
+    className
   )}
-  {...$$restProps}
->
-  <slot />
-  <TooltipPrimitive.Arrow
-    class={cn('border-dark-10 rounded-[2px] border-l border-t', {
-      'border-[#fdf5d3]': $$props.warning
-    })}
-  />
-</TooltipPrimitive.Content>
+  {...restProps}
+/>

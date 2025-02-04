@@ -8,8 +8,12 @@
   import * as Tooltip from '$lib/components/ui/tooltip';
   import { breakpoint } from '$lib/breakpoints';
 
-  export let supabase: SupabaseClient;
-  export let user: User | null;
+  interface Props {
+    supabase: SupabaseClient;
+    user: User | null;
+  }
+
+  let { supabase, user }: Props = $props();
 
   function toggleTheme(dark: boolean) {
     const theme = document.documentElement.getAttribute('data-theme') || 'light';
@@ -28,7 +32,7 @@
         type="checkbox"
         class="theme-controller"
         value="synthwave"
-        on:change={(e) => {
+        onchange={(e) => {
           toggleTheme(e.currentTarget.checked);
         }}
       />
@@ -40,33 +44,40 @@
     </label>
 
     {#if !user}
-      <Tooltip.Root bind:open={$highlightLogin}>
-        <Tooltip.Trigger>
-          <DaisyButton
-            size="sm"
-            variant="neutral"
-            on:click={() => {
-              supabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: {
-                  redirectTo: `${PUBLIC_WEBSITE_HOST}/auth/callback`
-                }
-              });
-            }}
-          >
-            {$breakpoint.mobile ? 'Login' : 'Login with Google'}
-            <Google slot="icon-left" />
-          </DaisyButton>
-        </Tooltip.Trigger>
-        <Tooltip.Content warning>Please login to generate an avatar</Tooltip.Content>
-      </Tooltip.Root>
+      <Tooltip.Provider>
+        <Tooltip.Root bind:open={$highlightLogin}>
+          <Tooltip.Trigger>
+            {#snippet child({ props })}
+              <DaisyButton
+                {...props}
+                size="sm"
+                variant="neutral"
+                onclick={() => {
+                  supabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                      redirectTo: `${PUBLIC_WEBSITE_HOST}/auth/callback`
+                    }
+                  });
+                }}
+              >
+                {$breakpoint.mobile ? 'Login' : 'Login with Google'}
+                {#snippet iconLeft()}
+                  <Google />
+                {/snippet}
+              </DaisyButton>
+            {/snippet}
+          </Tooltip.Trigger>
+          <Tooltip.Content warning>Please login to generate an avatar</Tooltip.Content>
+        </Tooltip.Root>
+      </Tooltip.Provider>
     {:else}
       <DaisyButton
         size="sm"
         variant="neutral"
         icon="logout"
         iconSide="left"
-        on:click={async () => {
+        onclick={async () => {
           await supabase.auth.signOut();
         }}
       >

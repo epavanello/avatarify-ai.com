@@ -1,13 +1,11 @@
 import Replicate from 'replicate';
 import { createClient } from '@supabase/supabase-js';
-import { error } from '@sveltejs/kit';
-import type { RequestHandler } from '../$types';
+import { error, type RequestHandler } from '@sveltejs/kit';
 import { PRIVATE_REPLICATE_API_TOKEN, PRIVATE_SUPABASE_SERVICE_ROLE } from '$env/static/private';
 import stylesServer from './styles.server';
 import { PUBLIC_SUPABASE_URL, PUBLIC_WEBSITE_HOST } from '$env/static/public';
 import { v4 as uuidv4 } from 'uuid';
 import type { Database } from '$lib/supabase-types';
-import { dailyGenerationLimit } from '$lib/costants';
 
 const replicate = new Replicate({
   auth: PRIVATE_REPLICATE_API_TOKEN
@@ -33,21 +31,29 @@ export const POST: RequestHandler = async ({ request, locals: { session } }) => 
     return error(400, 'Image is not a file');
   }
 
-  const today = new Date().toISOString().split('T')[0];
+  // Check remaining generations first
+  const { data: userPayment, error: userPaymentError } = await supabaseAdmin
+    .from('user_payments')
+    .select('remaining_generations')
+    .eq('user_id', session.user.id)
+    .maybeSingle();
 
-  // Check daily generation limit
-  const { count } = await supabaseAdmin
-    .from('generations')
-    .select('*', { count: 'exact', head: true })
-    .eq('uid', session.user.id)
-    .eq('day', today)
-    .throwOnError();
+  if (userPaymentError || !userPayment) {
+    return error(400, 'User payment not found');
+  }
 
-  if (count && count >= dailyGenerationLimit) {
-    return error(429, 'Daily generation limit reached');
+  if (userPayment.remaining_generations <= 0) {
+    return error(400, 'No remaining generations');
   }
 
   const id = uuidv4();
+
+  // Decrement remaining generations first to prevent race conditions
+  await supabaseAdmin
+    .from('user_payments')
+    .update({ remaining_generations: userPayment.remaining_generations - 1 })
+    .eq('user_id', session.user.id)
+    .throwOnError();
 
   const file = await supabaseAdmin.storage
     .from('v2')
@@ -62,17 +68,6 @@ export const POST: RequestHandler = async ({ request, locals: { session } }) => 
     if (signedUrl.error) {
       return error(500, 'Supabase error');
     }
-
-    // Track the image generation
-    await supabaseAdmin
-      .from('generations')
-      .insert({
-        picture_id: id,
-        uid: session.user.id,
-        // GMT date
-        day: today
-      })
-      .throwOnError();
 
     // https://replicate.com/collections/use-face-to-make-images
     const output = await replicate.predictions.create({
@@ -110,12 +105,6 @@ export const POST: RequestHandler = async ({ request, locals: { session } }) => 
       console.error(output.error);
       return error(500, 'Replicate error');
     }
-
-    await supabaseAdmin
-      .from('user_payments')
-      .update({ remaining_generations: remaining_generations - 1 })
-      .eq('user_id', session.user.id)
-      .throwOnError();
 
     return new Response(
       JSON.stringify({

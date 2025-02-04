@@ -2,15 +2,17 @@
   import type { Icons } from '$lib/icon.svelte';
   import Icon from '$lib/icon.svelte';
   import { cn } from '$lib/utils';
-  import { builderActions, getAttrs, type Builder } from 'bits-ui';
   import type { HTMLButtonAttributes } from 'svelte/elements';
+  import type { Snippet } from 'svelte';
 
-  type $$Props = {
+  type Props = {
     label?: string;
     /**
      * Search on: https://fonts.google.com/icons
      */
     icon?: Icons;
+    iconLeft?: Snippet;
+    iconRight?: Snippet;
     iconSide?: 'left' | 'right';
     loading?: boolean;
     circle?: boolean;
@@ -18,35 +20,38 @@
     ghost?: boolean;
     variant?: 'default' | 'neutral' | 'primary' | 'secondary' | 'success' | 'warning' | 'error';
     size?: 'xs' | 'sm' | 'md' | 'lg';
-    builders?: Builder[];
     error?: boolean;
+    children?: Snippet;
   } & HTMLButtonAttributes;
 
-  export let label: $$Props['label'] = undefined;
-  export let icon: $$Props['icon'] = undefined;
-  export let iconSide: $$Props['iconSide'] = 'right';
-  export let loading: $$Props['loading'] = false;
-  export let circle: $$Props['circle'] = false;
-  export let outline: $$Props['outline'] = false;
-  export let ghost: $$Props['ghost'] = false;
-  export let variant: $$Props['variant'] = 'default';
-  export let size: $$Props['size'] = 'md';
-  export let builders: $$Props['builders'] = undefined;
-  export let error: $$Props['error'] = false;
-  let classes: $$Props['class'] = undefined;
-  export { classes as class };
+  let {
+    label,
+    icon,
+    iconLeft,
+    iconRight,
+    iconSide = 'right',
+    loading = false,
+    circle = false,
+    outline = false,
+    ghost = false,
+    variant = 'default',
+    size = 'md',
+    error = $bindable(false),
+    class: classes,
+    children,
+    ...rest
+  }: Props = $props();
 
-  $: if (error) {
-    setTimeout(() => {
-      error = false;
-    }, 500);
-  }
+  $effect(() => {
+    if (error) {
+      setTimeout(() => {
+        error = false;
+      }, 500);
+    }
+  });
 </script>
 
 <button
-  use:builderActions={{ builders: builders || [] }}
-  {...getAttrs(builders || [])}
-  on:click
   class={cn(
     'btn',
     {
@@ -69,13 +74,13 @@
     { error: error }
   )}
   disabled={loading}
-  {...$$restProps}
+  {...rest}
 >
-  <slot name="icon-left">
-    {#if icon && iconSide === 'left' && !loading}
-      <Icon name={icon} {size} />
-    {/if}
-  </slot>
+  {@render iconLeft?.()}
+  {#if icon && iconSide === 'left' && !loading}
+    <Icon name={icon} {size} />
+  {/if}
+
   {#if loading && iconSide === 'left'}
     <span
       class={cn('loading loading-spinner aspect-square p-1', {
@@ -86,16 +91,16 @@
       })}
     ></span>
   {/if}
-  {#if $$slots.default}
-    <slot />
+  {#if children}
+    {@render children?.()}
   {:else if label}
     {label}
   {/if}
-  <slot name="icon-right">
-    {#if icon && iconSide === 'right' && !loading}
-      <Icon name={icon} {size} />
-    {/if}
-  </slot>
+  {@render iconRight?.()}
+  {#if icon && iconSide === 'right' && !loading}
+    <Icon name={icon} {size} />
+  {/if}
+
   {#if loading && iconSide === 'right'}
     <span
       class={cn('loading loading-spinner aspect-square p-1', {

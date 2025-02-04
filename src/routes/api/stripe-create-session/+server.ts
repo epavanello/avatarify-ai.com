@@ -1,5 +1,4 @@
-import { error } from '@sveltejs/kit';
-import type { RequestHandler } from '../$types';
+import { error, type RequestHandler } from '@sveltejs/kit';
 import Stripe from 'stripe';
 import { PRIVATE_STRIPE_SECRET_KEY } from '$env/static/private';
 import { PUBLIC_STRIPE_PRICE_ID, PUBLIC_WEBSITE_HOST } from '$env/static/public';
@@ -8,10 +7,8 @@ const stripe = new Stripe(PRIVATE_STRIPE_SECRET_KEY, {
   apiVersion: '2023-10-16'
 });
 
-export const POST: RequestHandler = async ({ request, locals: { session } }) => {
-  const { id } = await request.json();
-
-  if (!session || !session.user || !id) {
+export const POST: RequestHandler = async ({ locals: { session } }) => {
+  if (!session || !session.user) {
     return error(401, 'Unauthorized');
   }
 
@@ -23,8 +20,10 @@ export const POST: RequestHandler = async ({ request, locals: { session } }) => 
           quantity: 1
         }
       ],
+      customer_email: session.user.email,
       metadata: {
-        id
+        userId: session.user.id,
+        quantity: 100
       },
       mode: 'payment',
       ui_mode: 'embedded',

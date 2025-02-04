@@ -2,66 +2,29 @@
   import { generatedImageID, generationLoading } from './store';
   import { cn } from '$lib/utils';
   import DaisyButton from '$lib/components/daisy/daisy-button.svelte';
-  import * as Dialog from '$lib/components/ui/dialog';
-  import { loadStripe, type StripeEmbeddedCheckout } from '@stripe/stripe-js';
-  import { PUBLIC_STRIPE_PUBLISHABLE_KEY, PUBLIC_WEBSITE_HOST } from '$env/static/public';
-  import { onMount, tick } from 'svelte';
-  import { page } from '$app/stores';
+  import { PUBLIC_WEBSITE_HOST } from '$env/static/public';
   import { fade } from 'svelte/transition';
-  import { toast } from 'svelte-sonner';
   import Typewriter from 'svelte-typewriter';
   import { breakpoint } from '$lib/breakpoints';
   import Footer from '$lib/components/footer.svelte';
   import type { User } from '@supabase/supabase-js';
+  import { tick } from 'svelte';
+  import { invalidate } from '$app/navigation';
+  import Icon from '$lib/icon.svelte';
 
-  export let user: User | null;
-  $: isLogged = !!user;
-  $: hasUsableImageID = !!$generatedImageID && isLogged;
-
-  let checkout: StripeEmbeddedCheckout | null = null;
-  let board: HTMLElement;
-
-  async function buyCredit() {
-    window.plausible('OpenStripeCheckout');
-    askBuyDialog = false;
-    const stripe = await loadStripe(PUBLIC_STRIPE_PUBLISHABLE_KEY);
-    if (!stripe) {
-      console.error('Stripe not loaded');
-      return;
-    }
-
-    const response = await fetch('/api/stripe-create-session', {
-      method: 'POST',
-      body: JSON.stringify({
-        id: $generatedImageID
-      })
-    });
-    const { clientSecret } = await response.json();
-
-    // Initialize Checkout
-    checkout = await stripe.initEmbeddedCheckout({
-      clientSecret
-    });
-    showStripe = true;
+  interface Props {
+    user: User | null;
+    images: { id: string; url: string }[];
   }
 
-  function onShowStripe(el: HTMLDivElement) {
-    if (el && checkout) {
-      checkout.mount(el);
-    }
-    return {
-      destroy() {
-        if (checkout) {
-          checkout.destroy();
-        }
-      }
-    };
-  }
+  let { user, images }: Props = $props();
+  let selectedImageId = $state('');
+  let isLogged = $derived(!!user);
+  let hasUsableImageID = $derived(!!$generatedImageID && isLogged);
 
-  let canDownload = false;
-  let showStripe = false;
+  let board: HTMLElement | undefined = $state();
 
-  let randomId = Math.random().toString(36).substring(7);
+  let randomId = $state(Math.random().toString(36).substring(7));
 
   // a list with motivationals quotes to show on the board
   const motivationalsMessages = [
@@ -77,7 +40,7 @@
     'Seize the HD difference for mere cents!'
   ];
 
-  let motivationalMessage = '';
+  let motivationalMessage = $state('');
 
   function getRandomMotivationalMessage(): string {
     let message = '';
@@ -89,51 +52,58 @@
 
   motivationalMessage = getRandomMotivationalMessage();
 
-  onMount(async () => {
-    // check if url contains session_id
-    const session_id = $page.url.searchParams.get('session_id');
-    if (session_id) {
-      const stripeSession = await (
-        await fetch(`/api/stripe-session-status?session_id=${session_id}`)
-      ).json();
-      if (stripeSession.status == 'open') {
-        toast.warning('Ops! Your payment is not completed yet.');
-        buyCredit();
-      } else if (stripeSession.status == 'complete') {
-        canDownload = true;
-        toast.success('Your photo is ready to download!');
-        randomId = Math.random().toString(36).substring(7);
-        // replace the url without session
-        history.replaceState({}, document.title, '/');
-      }
-    } else if (hasUsableImageID) {
-      const checkResult = await (await fetch(`/api/check-payment/${$generatedImageID}`)).json();
-      if (checkResult.ok) {
-        canDownload = true;
-        randomId = Math.random().toString(36).substring(7);
-      }
-    }
-  });
-
   function getImageUrl() {
+    if (selectedImageId) {
+      const image = images.find((img) => img.id === selectedImageId);
+      if (!image) {
+        throw new Error('Image not found');
+      }
+      return image.url;
+    }
     return `${PUBLIC_WEBSITE_HOST}/api/get-image/${$generatedImageID}?_=${randomId}`;
   }
 
-  function download() {
+  async function download() {
+    const imageUrl = getImageUrl();
+    const response = await fetch(imageUrl);
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = getImageUrl();
+    a.href = url;
     a.download = 'generated-image.jpg';
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  }
+
+  async function deleteImage(id: string) {
+    try {
+      const response = await fetch(`/api/delete-image/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        images = images.filter((img) => img.id !== id);
+
+        await invalidate('app:images');
+        if (selectedImageId === id) {
+          selectedImageId = '';
+        }
+      }
+    } catch (error) {
+      console.error('Error deleting image:', error);
+    }
   }
 
   let interval: ReturnType<typeof setInterval>;
   generatedImageID.subscribe(async (value) => {
     if (value) {
       $generationLoading = true;
-      canDownload = false;
+      selectedImageId = '';
       if ($breakpoint.mobile) {
         await tick();
-        board.scrollIntoView({ behavior: 'smooth' });
+        board?.scrollIntoView({ behavior: 'smooth' });
       }
 
       // on each new image, check if the image is ready to download
@@ -142,9 +112,14 @@
       interval = setInterval(async () => {
         motivationalMessage = getRandomMotivationalMessage();
         const checkResult = await fetch(`/api/get-image/${value}`);
-        if (checkResult.status === 200) {
+        if (checkResult.ok) {
+          await invalidate('app:images');
+
           randomId = Math.random().toString(36).substring(7);
-          window.plausible('ImageGenerated');
+          generatedImageID.set('');
+          selectedImageId = value;
+
+          window.plausible?.('ImageGenerated');
           clearInterval(interval);
         }
       }, 5000);
@@ -152,12 +127,11 @@
       $generationLoading = false;
     }
   });
+
   function onImageLoad() {
     console.log('image loaded');
     $generationLoading = false;
   }
-
-  let askBuyDialog = false;
 </script>
 
 <section
@@ -170,7 +144,7 @@
       target="_blank"
       class="hidden dark:hidden md:block"
     >
-      <!-- svelte-ignore a11y-img-redundant-alt -->
+      <!-- svelte-ignore a11y_img_redundant_alt -->
       <img
         src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=440843&theme=light"
         alt="Avatarify&#0032;AI - The&#0032;AI&#0045;powered&#0032;profile&#0032;photo&#0032;generator | Product Hunt"
@@ -184,7 +158,7 @@
       target="_blank"
       class="hidden dark:block"
     >
-      <!-- svelte-ignore a11y-img-redundant-alt -->
+      <!-- svelte-ignore a11y_img_redundant_alt -->
       <img
         src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=440843&theme=neutral"
         alt="Avatarify&#0032;AI - The&#0032;AI&#0045;powered&#0032;profile&#0032;photo&#0032;generator | Product Hunt"
@@ -198,30 +172,33 @@
   <div
     class="photos-border relative flex aspect-[4/3] w-full max-w-xl flex-col items-center justify-center gap-4 bg-base-100"
   >
-    {#if $generationLoading && hasUsableImageID}
-      <span class="loading loading-infinity loading-lg"></span>
-    {/if}
-
-    {#if hasUsableImageID}
+    {#if selectedImageId}
       <img
-        src={`${PUBLIC_WEBSITE_HOST}/api/get-image/${$generatedImageID}?_=${randomId}`}
-        alt="Generated"
-        class={cn(
-          'absolute h-full w-full origin-bottom-left translate-y-0 rotate-0 rounded-lg object-cover opacity-100 transition-all',
-          {
-            'opacity-0': $generationLoading && hasUsableImageID
-          }
-        )}
+        src={images.find((img) => img.id === selectedImageId)?.url}
+        alt="Selected"
+        class="absolute h-full w-full origin-bottom-left translate-y-0 rotate-0 rounded-lg object-cover opacity-100 transition-all"
         crossorigin="anonymous"
         in:fade={{ duration: 300 }}
-        on:load={onImageLoad}
       />
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <!-- svelte-ignore a11y-interactive-supports-focus -->
+    {:else if $generationLoading && hasUsableImageID}
+      {#if $generatedImageID}
+        <img
+          src={`${PUBLIC_WEBSITE_HOST}/api/get-image/${$generatedImageID}?_=${randomId}`}
+          alt="Generated"
+          class={cn(
+            'absolute h-full w-full origin-bottom-left translate-y-0 rotate-0 rounded-lg object-cover opacity-0 transition-all'
+          )}
+          crossorigin="anonymous"
+          in:fade={{ duration: 300 }}
+          onload={onImageLoad}
+        />
+      {/if}
+      <!-- svelte-ignore a11y_click_events_have_key_events -->
+      <!-- svelte-ignore a11y_interactive_supports_focus -->
       <div
         class="pointer-events-auto absolute inset-0 cursor-default"
         role="button"
-        on:click={(e) => {
+        onclick={(e) => {
           e.preventDefault();
           e.stopPropagation();
         }}
@@ -246,72 +223,63 @@
     {/if}
   </div>
 
-  {#if canDownload}
-    <DaisyButton
-      variant="neutral"
-      icon="download"
-      class={cn({
-        invisible: !hasUsableImageID
-      })}
-      on:click={download}>Download</DaisyButton
-    >
-  {:else if hasUsableImageID}
-    <Dialog.Root
-      bind:open={askBuyDialog}
-      onOpenChange={(isOpen) => {
-        if (isOpen) {
-          window.plausible('TryDownloadModal');
-        }
-      }}
-    >
-      <Dialog.Trigger asChild let:builder>
-        <DaisyButton
-          variant="neutral"
-          icon="lock"
-          builders={[builder]}
-          class={cn({
-            'hidden md:invisible': !hasUsableImageID
-          })}>Download</DaisyButton
-        >
-      </Dialog.Trigger>
-      <Dialog.Content class="max-w-md overflow-auto">
-        <Dialog.Header>
-          <Dialog.Title>Do you like the result?</Dialog.Title>
-          <Dialog.Description>
-            Pay just <b>$0.97</b> and instantly download the selected avatar in high definition (1280x960)
-            without any watermark.
-          </Dialog.Description>
-        </Dialog.Header>
-        <div class="flex flex-row justify-between">
-          <DaisyButton
-            size="sm"
-            on:click={() => {
-              askBuyDialog = false;
-              window.plausible('UndoTryDownload');
-            }}>Cancel</DaisyButton
-          >
-          <DaisyButton variant="neutral" size="sm" icon="sell" on:click={buyCredit}
-            >Buy now
-          </DaisyButton>
-        </div>
-      </Dialog.Content>
-    </Dialog.Root>
+  {#if selectedImageId || (!$generationLoading && hasUsableImageID)}
+    <DaisyButton variant="neutral" icon="download" onclick={download}>Download</DaisyButton>
   {/if}
 
-  <Dialog.Root
-    bind:open={showStripe}
-    onOpenChange={(isOpen) => {
-      if (!isOpen) {
-        window.plausible('CloseStripeCheckout');
-      }
-    }}
-  >
-    <Dialog.Content class="max-h-full max-w-[1100px] overflow-auto px-0 lg:max-h-[80%]">
-      <div use:onShowStripe>
-        <!-- Checkout will insert the payment form here -->
-      </div>
-    </Dialog.Content>
-  </Dialog.Root>
+  {#if user}
+    <div class="carousel carousel-center mt-4 max-w-xl space-x-4 rounded-box bg-neutral p-4">
+      <!-- svelte-ignore a11y_click_events_have_key_events -->
+      {#if $generatedImageID && $generationLoading}
+        <!-- Placeholder for generating image -->
+        <!-- svelte-ignore a11y_click_events_have_key_events -->
+        <!-- svelte-ignore a11y_no_static_element_interactions -->
+        <div
+          class="carousel-item cursor-pointer"
+          onclick={() => {
+            selectedImageId = '';
+          }}
+        >
+          <div class="flex h-32 w-32 items-center justify-center rounded-box bg-base-100">
+            {#if $generationLoading}
+              <span class="loading loading-infinity loading-lg"></span>
+            {/if}
+          </div>
+        </div>
+      {/if}
+      <!-- svelte-ignore a11y_click_events_have_key_events -->
+      {#each images as image}
+        <!-- svelte-ignore a11y_click_events_have_key_events -->
+        <!-- svelte-ignore a11y_no_static_element_interactions -->
+        <div class="carousel-item relative">
+          <div
+            class="cursor-pointer"
+            onclick={() => {
+              selectedImageId = image.id;
+            }}
+          >
+            <img
+              src={image.url}
+              alt="Generated"
+              class={cn('h-32 w-32 rounded-box object-cover', {
+                'ring-4 ring-primary': selectedImageId === image.id
+              })}
+            />
+          </div>
+          <DaisyButton
+            class="absolute -right-2 -top-2"
+            circle
+            icon="close"
+            size="xs"
+            onclick={(e) => {
+              deleteImage(image.id);
+              e.stopPropagation();
+            }}
+          />
+        </div>
+      {/each}
+    </div>
+  {/if}
 
   <Footer class="absolute hidden md:block" />
 </section>
