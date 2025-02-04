@@ -7,10 +7,6 @@
   let { data } = $props();
 
   const { images, remainingGenerations } = $derived(data);
-
-  $effect(() => {
-    console.log({ images, remainingGenerations });
-  });
 </script>
 
 <Header supabase={data.supabase} user={data.user} />

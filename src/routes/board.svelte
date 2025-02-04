@@ -129,7 +129,6 @@
   });
 
   function onImageLoad() {
-    console.log('image loaded');
     $generationLoading = false;
   }
 </script>

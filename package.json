@@ -18,7 +18,6 @@
     "@sveltejs/kit": "^2.17.1",
     "@sveltejs/vite-plugin-svelte": "^5.0.3",
     "@tailwindcss/typography": "^0.5.13",
-    "@types/eslint": "8.56.10",
     "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
@@ -29,7 +28,6 @@
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-svelte": "^2.46.1",
-    "formsnap": "^2.0.0",
     "lucide-svelte": "^0.474.0",
     "mode-watcher": "^0.5.1",
     "postcss": "^8.4.38",
@@ -39,12 +37,9 @@
     "svelte": "^5.19.7",
     "svelte-check": "^4.1.4",
     "svelte-sonner": "^0.3.28",
-    "sveltekit-superforms": "^2.23.1",
     "tailwindcss": "^3.4.3",
-    "tslib": "^2.6.2",
     "typescript": "^5.4.5",
-    "vite": "^6.0.11",
-    "zod": "^3.24.1"
+    "vite": "^6.0.11"
   },
   "type": "module",
   "dependencies": {
@@ -52,16 +47,12 @@
     "@supabase/ssr": "^0.3.0",
     "@supabase/supabase-js": "^2.43.4",
     "clsx": "^2.1.1",
-    "gsap": "^3.12.5",
     "replicate": "^0.30.0",
-    "runed": "^0.23.2",
-    "sharp": "^0.33.4",
     "stripe": "^14.17.0",
     "svelte-typewriter": "^3.2.3",
     "tailwind-merge": "^2.3.0",
     "tailwind-variants": "^0.2.1",
     "tailwindcss-debug-screens": "^2.2.1",
-    "uuid": "^9.0.1",
-    "watermark-js-plus": "^1.5.0"
+    "uuid": "^9.0.1"
   }
 }

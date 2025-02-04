@@ -19,9 +19,8 @@ export const DELETE: RequestHandler = async ({ params, locals: { session } }) =>
   const filePath = `original/${session.user.id}/${id}`;
 
   // Delete the file from storage
-  const { error: deleteError, data } = await supabaseAdmin.storage.from('v2').remove([filePath]);
-  console.log('deleteError', deleteError);
-  console.log('data', data);
+  const { error: deleteError } = await supabaseAdmin.storage.from('v2').remove([filePath]);
+
   if (deleteError) {
     console.error('Error deleting file:', deleteError);
     return error(500, 'Error deleting image');
