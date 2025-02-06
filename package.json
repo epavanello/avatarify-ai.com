@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "concurrently \"npm run proxy\" \"node scripts/update-env.js\" \"vite dev\"",
+    "sync": "svelte-kit sync",
     "build": "vite build",
     "preview": "vite preview",
     "proxy": "ngrok http 5173",

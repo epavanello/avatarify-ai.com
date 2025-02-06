@@ -140,7 +140,7 @@
     <a
       href="https://www.producthunt.com/posts/avatarify-ai?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-avatarify&#0045;ai"
       target="_blank"
-      class="hidden dark:hidden md:block"
+      class="hidden md:block dark:hidden"
     >
       <!-- svelte-ignore a11y_img_redundant_alt -->
       <img
@@ -212,11 +212,13 @@
       </p>
 
       {#if $generationLoading && hasUsableImageID}
-        <Typewriter>
-          <p class="px-8 text-center font-mono text-lg font-semibold text-neutral-content">
-            {motivationalMessage}
-          </p>
-        </Typewriter>
+        {#key motivationalMessage}
+          <Typewriter>
+            <p class="px-8 text-center font-mono text-lg font-semibold text-neutral-content">
+              {motivationalMessage}
+            </p>
+          </Typewriter>
+        {/key}
       {/if}
     {/if}
   </div>

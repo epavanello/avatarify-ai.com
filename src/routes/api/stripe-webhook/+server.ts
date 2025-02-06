@@ -29,7 +29,17 @@ export const POST: RequestHandler = async ({ request }) => {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
         const userId = session.metadata?.userId;
-        const quantity = parseInt(session.metadata?.quantity || '0');
+
+        // Recupera la sessione espandendo i line items
+        const sessionWithLineItems = await stripe.checkout.sessions.retrieve(session.id, {
+          expand: ['line_items']
+        });
+
+        const quantity = parseInt(
+          sessionWithLineItems.line_items?.data[0].quantity?.toString() ||
+            session.metadata?.quantity ||
+            '0'
+        );
 
         if (!userId || !quantity) {
           console.error('Missing userId or quantity in session metadata');

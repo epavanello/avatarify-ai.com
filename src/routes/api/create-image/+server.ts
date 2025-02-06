@@ -71,7 +71,7 @@ export const POST: RequestHandler = async ({ request, locals: { session } }) => 
 
     // https://replicate.com/collections/use-face-to-make-images
     const output = await replicate.predictions.create({
-      version: '6af8583c541261472e92155d87bba80d5ad98461665802f2ba196ac099aaedc9',
+      version: '2e4785a4d80dadf580077b2244c8d7c05d8e3faac04a04c02d8e099dd2876789',
       webhook: `${PUBLIC_WEBSITE_HOST}/api/replicate-webhook`,
       webhook_events_filter: ['completed'],
       input: {

@@ -17,13 +17,17 @@ export const POST: RequestHandler = async ({ locals: { session } }) => {
       line_items: [
         {
           price: PUBLIC_STRIPE_PRICE_ID,
-          quantity: 1
+          quantity: 100,
+          adjustable_quantity: {
+            enabled: true,
+            minimum: 10,
+            maximum: 100
+          }
         }
       ],
       customer_email: session.user.email,
       metadata: {
-        userId: session.user.id,
-        quantity: 100
+        userId: session.user.id
       },
       mode: 'payment',
       ui_mode: 'embedded',
@@ -38,6 +42,6 @@ export const POST: RequestHandler = async ({ locals: { session } }) => {
     );
   } catch (e) {
     console.error(e);
-    return error(500, 'Replicate error');
+    return error(500, 'Stripe session error');
   }
 };
