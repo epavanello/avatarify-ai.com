@@ -17,7 +17,7 @@ export const POST: RequestHandler = async ({ locals: { session } }) => {
       line_items: [
         {
           price: PUBLIC_STRIPE_PRICE_ID,
-          quantity: 100,
+          quantity: 10,
           adjustable_quantity: {
             enabled: true,
             minimum: 10,
