@@ -98,6 +98,7 @@
     window.plausible?.('TryGenerateImage');
     if (remainingGenerations <= 0) {
       toast.error('You have used all your generations. Please purchase more.');
+      buyCredit();
       return;
     }
     if (!user) {
