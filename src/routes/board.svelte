@@ -143,8 +143,9 @@
     <div class="flex flex-col items-center gap-3 rounded-lg bg-white/5 p-4 backdrop-blur-sm">
       <p class="text-lg font-medium text-white">🚀 Introducing StudyFa.st</p>
       <p class="text-center text-white/90">
-        We've built a revolutionary app to supercharge your learning experience. Join thousands of
-        successful students!
+        We've built a revolutionary app to supercharge your learning experience.
+        <br />
+        Join thousands of successful students!
       </p>
       <Button
         href="https://StudyFa.st"
