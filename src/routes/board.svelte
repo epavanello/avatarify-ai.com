@@ -10,6 +10,7 @@
   import type { User } from '@supabase/supabase-js';
   import { tick } from 'svelte';
   import { invalidate } from '$app/navigation';
+  import Button from '$lib/components/ui/button/button.svelte';
 
   interface Props {
     user: User | null;
@@ -133,38 +134,27 @@
 </script>
 
 <section
-  class="top-0 flex flex-1 flex-col items-center justify-center gap-4 bg-base-200 p-4 md:sticky md:min-h-[520px] md:border-r md:border-neutral-content"
+  class="top-0 flex flex-1 flex-col items-center justify-evenly gap-4 bg-base-200 p-4 md:sticky md:min-h-[520px] md:border-r md:border-neutral-content"
   bind:this={board}
 >
-  <div class="absolute top-8">
-    <a
-      href="https://www.producthunt.com/posts/avatarify-ai?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-avatarify&#0045;ai"
-      target="_blank"
-      class="hidden md:block dark:hidden"
-    >
-      <!-- svelte-ignore a11y_img_redundant_alt -->
-      <img
-        src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=440843&theme=light"
-        alt="Avatarify&#0032;AI - The&#0032;AI&#0045;powered&#0032;profile&#0032;photo&#0032;generator | Product Hunt"
-        style="width: 250px; height: 54px;"
-        width="250"
-        height="54"
-      />
-    </a>
-    <a
-      href="https://www.producthunt.com/posts/avatarify-ai?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-avatarify&#0045;ai"
-      target="_blank"
-      class="hidden dark:md:block"
-    >
-      <!-- svelte-ignore a11y_img_redundant_alt -->
-      <img
-        src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=440843&theme=neutral"
-        alt="Avatarify&#0032;AI - The&#0032;AI&#0045;powered&#0032;profile&#0032;photo&#0032;generator | Product Hunt"
-        style="width: 250px; height: 54px;"
-        width="250"
-        height="54"
-      />
-    </a>
+  <div
+    class="relative w-full max-w-2xl rounded-lg bg-gradient-to-bl from-sky-600 to-[#40e49d] p-1 dark:to-[#09aa64]"
+  >
+    <div class="flex flex-col items-center gap-3 rounded-lg bg-white/5 p-4 backdrop-blur-sm">
+      <p class="text-lg font-medium text-white">🚀 Introducing StudyFa.st</p>
+      <p class="text-center text-white/90">
+        We've built a revolutionary app to supercharge your learning experience. Join thousands of
+        successful students!
+      </p>
+      <Button
+        href="https://StudyFa.st"
+        target="_blank"
+        variant="secondary"
+        class="transition-transform hover:scale-105"
+      >
+        Try it Free Now →
+      </Button>
+    </div>
   </div>
 
   <div
