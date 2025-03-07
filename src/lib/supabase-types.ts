@@ -155,16 +155,19 @@ export type Database = {
           user_id: string;
           remaining_generations: number;
           created_at: string;
+          updated_at: string;
         };
         Insert: {
           user_id: string;
           remaining_generations?: number;
           created_at?: string;
+          updated_at?: string;
         };
         Update: {
           user_id?: string;
           remaining_generations?: number;
           created_at?: string;
+          updated_at?: string;
         };
         Relationships: [
           {

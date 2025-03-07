@@ -97,7 +97,12 @@
   async function generate() {
     window.plausible?.('TryGenerateImage');
     if (remainingGenerations <= 0) {
-      toast.error('You have used all your generations. Please purchase more.');
+      toast.error(
+        'You have exhausted your available generations. Please wait until tomorrow or purchase additional generations.',
+        {
+          duration: 10_000
+        }
+      );
       buyCredit();
       return;
     }
