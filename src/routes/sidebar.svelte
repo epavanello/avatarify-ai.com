@@ -2,7 +2,7 @@
   import { fade, scale } from 'svelte/transition';
   import * as Card from '$lib/components/ui/card';
   import * as RadioGroup from '$lib/components/ui/radio-group';
-  import { Label } from '$lib/components/ui/label';
+  import Label from '$lib/components/ui/label/label.svelte';
   import StyleItem from './style-item.svelte';
   import DaisyButton from '$lib/components/daisy/daisy-button.svelte';
   import DropZone from '$lib/components/drop-zone.svelte';
@@ -18,7 +18,7 @@
     highlightPhotoUpload
   } from './store';
   import type { User } from '@supabase/supabase-js';
-  import { styles, type Styles } from './api/create-image/styles';
+  import { styles, stylesWithPrompts, type Styles } from './api/create-image/styles';
   import Footer from '$lib/components/footer.svelte';
   import * as Tooltip from '$lib/components/ui/tooltip';
   import RollingDigits from '$lib/components/rolling-digits/rolling-digits.svelte';
@@ -26,6 +26,11 @@
   import * as Dialog from '$lib/components/ui/dialog';
   import { loadStripe, type StripeEmbeddedCheckout } from '@stripe/stripe-js';
   import { PUBLIC_STRIPE_PUBLISHABLE_KEY } from '$env/static/public';
+  import * as Collapsible from '$lib/components/ui/collapsible';
+  import Icon from '$lib/icon.svelte';
+
+  // Adding custom style option for the "+" option
+  const CUSTOM_STYLE = 'custom';
 
   // https://github.com/InstantID/InstantID/blob/main/assets/0.png
   // https://github.com/ahgsql/StyleSelectorXL/blob/main/sdxl_styles.json
@@ -43,12 +48,42 @@
   let cameraIsReady = $state(false);
   let video: HTMLVideoElement | undefined = $state();
   let mouseOverDropZone = $state(false);
-  let style: Styles | '' = $state('');
+  let style: Styles | typeof CUSTOM_STYLE | '' = $state('');
+  let currentPrompt: string = $state('');
+  let currentNegativePrompt: string = $state('');
   let generateError = $state(false);
   let buyError = $state(false);
   let stream: MediaStream | undefined = $state();
   let checkout: StripeEmbeddedCheckout | null = null;
   let showStripe = $state(false);
+  let showPromptSettings = $state(false);
+
+  // When style changes, update the current prompts
+  $effect(() => {
+    if (style && style !== CUSTOM_STYLE) {
+      const selectedStyle = stylesWithPrompts.find((s) => s.name === style);
+      if (selectedStyle) {
+        currentPrompt = selectedStyle.prompt;
+        currentNegativePrompt = selectedStyle.negative_prompt;
+      }
+    } else if (style === CUSTOM_STYLE) {
+      // For custom style, set empty or default prompts
+      currentPrompt = 'Photo of a person. ...';
+      currentNegativePrompt = 'ugly, deformed, noisy, blurry';
+      showPromptSettings = true;
+    }
+  });
+
+  function resetToOriginalPrompt() {
+    if (style && style !== CUSTOM_STYLE) {
+      const selectedStyle = stylesWithPrompts.find((s) => s.name === style);
+      if (selectedStyle) {
+        currentPrompt = selectedStyle.prompt;
+        currentNegativePrompt = selectedStyle.negative_prompt;
+        toast.info('Reset to original prompt');
+      }
+    }
+  }
 
   async function buyCredit() {
     window.plausible?.('OpenStripeCheckout');
@@ -132,6 +167,8 @@
       var data = new FormData();
       data.append('image', $blobImage);
       data.append('style', style);
+      data.append('prompt', currentPrompt);
+      data.append('negative_prompt', currentNegativePrompt);
 
       const response = await fetch('/api/create-image', {
         method: 'POST',
@@ -228,6 +265,10 @@
       startCapture();
     }
   });
+
+  function togglePromptSettings() {
+    showPromptSettings = !showPromptSettings;
+  }
 </script>
 
 <aside class="flex w-full flex-col pt-8 md:max-w-md">
@@ -343,14 +384,73 @@
           </Tooltip.Provider>
         </Card.Title>
         <Card.Description>
-          Choose a style for your photo. The style will be applied to your photo to make it look
-          unique.
+          Choose a style for your photo or create your own custom style.
         </Card.Description>
       </Card.Header>
-      <Card.Content class="grid gap-6">
+
+      <Card.Content class="grid gap-4">
+        <Collapsible.Root bind:open={showPromptSettings} disabled={!style}>
+          <Collapsible.Trigger>
+            {#snippet child({ props })}
+              <DaisyButton
+                {...props}
+                icon={showPromptSettings ? 'expand_less' : 'expand_more'}
+                size="sm"
+                class="mt-2 w-full"
+              >
+                {showPromptSettings ? 'Hide' : 'Show'} Prompt Settings
+              </DaisyButton>
+            {/snippet}
+          </Collapsible.Trigger>
+          <Collapsible.Content>
+            <div class="space-y-4 pt-4">
+              <div class="space-y-2">
+                <Label for="prompt">Prompt</Label>
+                <textarea
+                  id="prompt"
+                  class="min-h-24 w-full rounded-md border border-input bg-background p-2"
+                  bind:value={currentPrompt}
+                  placeholder="Enter your prompt here..."
+                ></textarea>
+                <p class="text-xs text-muted-foreground">
+                  The prompt is used to generate the image. You can use the prompt to describe what
+                  you want to see in the image.
+                </p>
+              </div>
+
+              <div class="space-y-2">
+                <Label for="negative-prompt">Negative Prompt</Label>
+                <textarea
+                  id="negative-prompt"
+                  class="min-h-16 w-full rounded-md border border-input bg-background p-2"
+                  bind:value={currentNegativePrompt}
+                  placeholder="Enter what you don't want to see in the image..."
+                ></textarea>
+                <p class="text-xs text-muted-foreground">
+                  Describe what you want to avoid in the generated image.
+                </p>
+              </div>
+
+              {#if style !== CUSTOM_STYLE}
+                <DaisyButton
+                  label="Reset to Original"
+                  size="sm"
+                  variant="neutral"
+                  onclick={resetToOriginalPrompt}
+                />
+              {/if}
+            </div>
+          </Collapsible.Content>
+        </Collapsible.Root>
         <RadioGroup.Root bind:value={style} class="grid grid-cols-2 gap-4 sm:grid-cols-3">
-          {#each styles as style}
-            <StyleItem name={style} />
+          <StyleItem name={CUSTOM_STYLE} label="Custom">
+            <div class="flex h-full w-full items-center justify-center" slot="icon">
+              <Icon name="add" />
+            </div>
+          </StyleItem>
+
+          {#each styles as styleOption}
+            <StyleItem name={styleOption} />
           {/each}
         </RadioGroup.Root>
       </Card.Content>

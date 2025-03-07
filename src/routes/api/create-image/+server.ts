@@ -2,7 +2,6 @@ import Replicate from 'replicate';
 import { createClient } from '@supabase/supabase-js';
 import { error, type RequestHandler } from '@sveltejs/kit';
 import { PRIVATE_REPLICATE_API_TOKEN, PRIVATE_SUPABASE_SERVICE_ROLE } from '$env/static/private';
-import stylesServer from './styles.server';
 import { PUBLIC_SUPABASE_URL, PUBLIC_WEBSITE_HOST } from '$env/static/public';
 import { v4 as uuidv4 } from 'uuid';
 import type { Database } from '$lib/supabase-types';
@@ -17,14 +16,16 @@ export const POST: RequestHandler = async ({ request, locals: { session } }) => 
   const data = await request.formData();
 
   const image = data.get('image');
-  const style = stylesServer.find((s) => s.name === data.get('style'));
+  const styleName = data.get('style');
+  const prompt = data.get('prompt');
+  const negative_prompt = data.get('negative_prompt');
 
   if (!session || !session.user) {
     return error(401, 'Unauthorized');
   }
 
-  if (!image || !style) {
-    return error(400, 'Missing image or style');
+  if (!image || !styleName || !prompt || !negative_prompt) {
+    return error(400, 'Missing required parameters');
   }
 
   if (!(image instanceof File)) {
@@ -78,7 +79,7 @@ export const POST: RequestHandler = async ({ request, locals: { session } }) => 
         image: signedUrl.data.signedUrl,
         width: 640,
         height: 640,
-        prompt: style.prompt.replace('{prompt}', 'of a person'),
+        prompt: prompt,
         scheduler: 'EulerDiscreteScheduler',
         enable_lcm: false,
         sdxl_weights: 'protovision-xl-high-fidel',
@@ -86,7 +87,7 @@ export const POST: RequestHandler = async ({ request, locals: { session } }) => 
         canny_strength: 0.3,
         depth_strength: 0.5,
         guidance_scale: 5,
-        negative_prompt: style.negative_prompt,
+        negative_prompt: negative_prompt,
         ip_adapter_scale: 0.8,
         lcm_guidance_scale: 1.5,
         num_inference_steps: 30,
