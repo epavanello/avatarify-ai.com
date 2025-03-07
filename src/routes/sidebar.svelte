@@ -463,9 +463,7 @@
   >
     <div class="flex w-full flex-col gap-4">
       {#if !user}
-        <p class="text-center text-sm text-error">
-          Please login to generate previews and buy credits
-        </p>
+        <p class="text-center text-sm text-error">Login to get daily free credits or buy more</p>
       {/if}
       <div class="flex w-full gap-2">
         <DaisyButton
