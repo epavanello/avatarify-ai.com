@@ -131,6 +131,11 @@
 
   async function generate() {
     window.plausible?.('TryGenerateImage');
+    if (!user) {
+      highlightLogin.set(true);
+      generateError = true;
+      return;
+    }
     if (remainingGenerations <= 0) {
       toast.error(
         'You have exhausted your available generations. Please wait until tomorrow or purchase additional generations.',
@@ -139,11 +144,6 @@
         }
       );
       buyCredit();
-      return;
-    }
-    if (!user) {
-      highlightLogin.set(true);
-      generateError = true;
       return;
     }
     if (!$blobImage) {

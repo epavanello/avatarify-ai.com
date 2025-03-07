@@ -68,7 +68,7 @@
               </DaisyButton>
             {/snippet}
           </Tooltip.Trigger>
-          <Tooltip.Content warning>Please login to generate an avatar</Tooltip.Content>
+          <Tooltip.Content warning class="mr-8">Please login to generate an avatar</Tooltip.Content>
         </Tooltip.Root>
       </Tooltip.Provider>
     {:else}
