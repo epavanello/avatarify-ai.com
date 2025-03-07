@@ -21,18 +21,18 @@ export async function load({ locals: { session }, depends }) {
     ]);
 
     // If no payment record exists, create one with 2 remaining generations
-    // if (!paymentData) {
-    //   const { data: newPaymentData } = await supabaseAdmin
-    //     .from('user_payments')
-    //     .insert({
-    //       user_id: session.user.id,
-    //       remaining_generations: 2
-    //     })
-    //     .select('remaining_generations')
-    //     .single();
+    if (!paymentData) {
+      const { data: newPaymentData } = await supabaseAdmin
+        .from('user_payments')
+        .insert({
+          user_id: session.user.id,
+          remaining_generations: 1
+        })
+        .select('remaining_generations')
+        .single();
 
-    //   paymentData = newPaymentData;
-    // }
+      paymentData = newPaymentData;
+    }
 
     const images = files
       ? await Promise.all(
