@@ -8,10 +8,6 @@ const stripe = new Stripe(PRIVATE_STRIPE_SECRET_KEY, {
 });
 
 export const POST: RequestHandler = async ({ locals: { session } }) => {
-  if (!session || !session.user) {
-    return error(401, 'Unauthorized');
-  }
-
   try {
     const stripeSession = await stripe.checkout.sessions.create({
       line_items: [
@@ -25,9 +21,9 @@ export const POST: RequestHandler = async ({ locals: { session } }) => {
           }
         }
       ],
-      customer_email: session.user.email,
+      customer_email: session?.user?.email,
       metadata: {
-        userId: session.user.id
+        userId: session?.user?.id
       },
       mode: 'payment',
       ui_mode: 'embedded',

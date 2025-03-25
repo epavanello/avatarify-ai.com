@@ -488,11 +488,6 @@
           size="md"
           class="flex-1"
           onclick={() => {
-            if (!user) {
-              highlightLogin.set(true);
-              buyError = true;
-              return;
-            }
             buyCredit();
           }}
           bind:error={buyError}
