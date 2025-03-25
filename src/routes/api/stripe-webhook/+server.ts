@@ -1,7 +1,7 @@
 import { error, json, type RequestHandler } from '@sveltejs/kit';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/supabase-types';
-import { PUBLIC_SUPABASE_URL } from '$env/static/public';
+import { PUBLIC_SUPABASE_URL, PUBLIC_WEBSITE_HOST } from '$env/static/public';
 import {
   PRIVATE_STRIPE_ENDPOINT_SECRET,
   PRIVATE_STRIPE_SECRET_KEY,
@@ -59,7 +59,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
           const { data: newUser, error: createUserError } =
             await supabaseAdmin.auth.admin.inviteUserByEmail(customerResponse.email, {
-              redirectTo: `${process.env.PUBLIC_SITE_URL}/auth/callback`
+              redirectTo: `${PUBLIC_WEBSITE_HOST}/auth/callback`
             });
 
           if (createUserError || !newUser.user.id) {
