@@ -271,6 +271,4 @@
       {/each}
     </div>
   {/if}
-
-  <Footer class="absolute hidden md:block" />
 </section>

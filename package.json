@@ -49,6 +49,7 @@
     "@supabase/supabase-js": "^2.43.4",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "mdsvex": "^0.12.3",
     "replicate": "^0.30.0",
     "stripe": "^17.6.0",
     "svelte-typewriter": "^3.2.3",

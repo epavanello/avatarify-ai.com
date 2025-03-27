@@ -22,9 +22,7 @@ export const POST: RequestHandler = async ({ locals: { session } }) => {
         }
       ],
       customer_email: session?.user?.email,
-      metadata: {
-        userId: session?.user?.id
-      },
+      metadata: session?.user?.id ? { userId: session?.user?.id } : undefined,
       mode: 'payment',
       ui_mode: 'embedded',
       return_url: `${PUBLIC_WEBSITE_HOST}/?session_id={CHECKOUT_SESSION_ID}`
