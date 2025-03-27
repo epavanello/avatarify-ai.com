@@ -134,7 +134,7 @@
 </script>
 
 <section
-  class="top-0 flex flex-1 flex-col items-center justify-evenly gap-4 bg-base-200 p-4 md:sticky md:min-h-[520px] md:border-r md:border-neutral-content"
+  class="top-0 flex flex-1 flex-col items-center justify-evenly gap-4 bg-base-200 p-4 md:sticky md:min-h-[710px] md:border-r md:border-neutral-content"
   bind:this={board}
 >
   <div
