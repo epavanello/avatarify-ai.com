@@ -8,6 +8,9 @@ export default defineConfig(({ mode }) => {
     plugins: [sveltekit()],
     server: {
       allowedHosts: mode === 'development' ? [new URL(env.PUBLIC_WEBSITE_HOST).host] : undefined
+    },
+    define: {
+      'import.meta.env.VITE_BUILD_DATE': JSON.stringify(new Date().toISOString())
     }
   };
 });
