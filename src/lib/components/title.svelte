@@ -19,13 +19,13 @@
 <div class={cn('mb-12', { 'text-center': center }, className)}>
   {#if actions}
     <div class="flex flex-row items-center justify-between gap-2">
-      <h1 class="mb-0 text-3xl">
+      <h1 class="mb-0 text-4xl">
         {@render children()}
       </h1>
       {@render actions?.()}
     </div>
   {:else}
-    <h1 class="mb-0 text-3xl">
+    <h1 class="mb-0 text-4xl">
       {@render children()}
     </h1>
   {/if}

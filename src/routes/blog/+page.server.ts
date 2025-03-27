@@ -9,10 +9,17 @@ export async function load() {
     }
   );
 
-  const pages = Object.entries(files).map(([path, component]) => ({
-    path: path.replace('/+page.md', ''),
-    metadata: component.metadata as unknown as BlogProps
-  }));
+  const pages = Object.entries(files)
+    .map(([path, component]) => ({
+      path: path.replace('/+page.md', ''),
+      metadata: component.metadata as unknown as BlogProps
+    }))
+    .sort((a, b) => {
+      if (!a.metadata.date || !b.metadata.date) {
+        return 0;
+      }
+      return new Date(b.metadata.date).getTime() - new Date(a.metadata.date).getTime();
+    });
 
   return {
     pages

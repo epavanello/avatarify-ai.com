@@ -1,7 +1,7 @@
 ---
 title: 'Building Avatarify AI: A Simple Tool for Creating Custom Avatars'
 description: A tool that lets you create custom avatars from a single photo. It's open source, self-hostable, and uses Stable Diffusion under the hood.
-date: 2025-03-27
+date: 2025-03-26
 keywords: open source, custom avatars, stable diffusion, self-hostable, replicate, ghibli, anime, avatar, ai, tool
 author: emadev01
 readingTime: 5 min
