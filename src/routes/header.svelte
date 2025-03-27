@@ -23,7 +23,10 @@
 </script>
 
 <header class="flex items-center justify-start gap-8 border-b border-neutral-content p-4">
-  <h1 class="text-2xl font-bold">AvatarifyAI</h1>
+  <h1 class="text-2xl font-bold">
+    <a href="/">AvatarifyAI</a>
+  </h1>
+  <a href="/blog" class="hidden text-lg hover:text-primary md:block">Blog</a>
   <div class="flex-1"></div>
   <div class="flex space-x-4">
     <label class="swap swap-rotate">

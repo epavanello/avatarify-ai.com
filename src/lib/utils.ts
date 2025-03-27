@@ -12,3 +12,5 @@ export const toBase64 = (file: Blob) =>
     reader.onload = () => resolve(reader.result);
     reader.onerror = reject;
   });
+
+export const buildDate = new Date(import.meta.env.VITE_BUILD_DATE);
