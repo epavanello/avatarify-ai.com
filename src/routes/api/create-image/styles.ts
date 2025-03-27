@@ -1,4 +1,5 @@
 export const styles = [
+  'Ghibli',
   'Anime',
   'Neon Punk',
   'GTA',
@@ -16,6 +17,12 @@ export const styles = [
 ] as const;
 
 export const stylesServer = [
+  {
+    name: 'Ghibli',
+    prompt:
+      'Ghibli style of a person. Studio Ghibli, anime, fantasy, whimsical, magical, detailed, vibrant',
+    negative_prompt: 'ugly, deformed, noisy, blurry, low contrast, realistic, photorealistic'
+  },
   {
     name: '3D Model',
     prompt:
