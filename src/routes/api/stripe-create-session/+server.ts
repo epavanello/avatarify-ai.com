@@ -16,7 +16,7 @@ export const POST: RequestHandler = async ({ locals: { session } }) => {
           quantity: 20,
           adjustable_quantity: {
             enabled: true,
-            minimum: 20,
+            minimum: 10,
             maximum: 100
           }
         }
