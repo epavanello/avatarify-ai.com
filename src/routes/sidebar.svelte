@@ -492,7 +492,7 @@
           }}
           bind:error={buyError}
         >
-          Buy credits
+          Buy credits - {(2 * 0.94).toFixed(2)}$
         </DaisyButton>
       </div>
     </div>
