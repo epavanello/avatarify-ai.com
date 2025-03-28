@@ -14,7 +14,7 @@
 >
   <RadioGroup.Item value={name} id={name} class="sr-only" aria-label={name} />
   <slot name="icon">
-    <img src={`/${name}.png`} alt={name} class="aspect-square w-full" />
+    <img src={`/${name}.webp`} alt={name} class="aspect-square w-full" />
   </slot>
   <span class="style-title absolute bottom-1 left-0 w-full text-center text-white drop-shadow-sm">
     {label}

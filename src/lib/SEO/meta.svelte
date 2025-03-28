@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { page } from '$app/state';
+  import { PUBLIC_WEBSITE_HOST } from '$env/static/public';
   import config from '$lib/config';
 
   export interface MetaProps {
@@ -18,10 +20,16 @@
     author = ''
   }: MetaProps = $props();
 
+  const canonical = $derived(`${PUBLIC_WEBSITE_HOST}${page.url.pathname}`);
+
   let fullTitle = $derived(config.name + (title ? ` | ${title}` : ''));
 </script>
 
 <svelte:head>
+  <meta name="robots" content="{config.noIndex ? 'noindex' : 'index'},follow" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta property="og:image" content="{PUBLIC_WEBSITE_HOST}/og-image.webp" />
+  <link rel="canonical" href={canonical} />
   {#if type}
     <meta property="og:type" content={type} />
   {/if}
