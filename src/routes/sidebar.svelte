@@ -37,10 +37,12 @@
 
   let {
     user,
-    remainingGenerations
+    remainingGenerations,
+    features
   }: {
     user: User | null;
     remainingGenerations: number;
+    features: { DAILY_FREE_CREDITS: boolean };
   } = $props();
 
   let dropZone: DropZone | undefined = $state();
@@ -463,7 +465,13 @@
   >
     <div class="flex w-full flex-col gap-4">
       {#if !user}
-        <p class="text-center text-sm text-error">Login to get daily free credits or buy more</p>
+        <p class="text-center text-sm text-error">
+          {#if features.DAILY_FREE_CREDITS}
+            Login to get daily free credits or buy more
+          {:else}
+            Login to generate avatars or buy credits
+          {/if}
+        </p>
       {/if}
       <div class="flex w-full gap-2">
         <DaisyButton

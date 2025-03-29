@@ -5,7 +5,7 @@
 
   let { data } = $props();
 
-  const { images, remainingGenerations } = $derived(data);
+  const { images, remainingGenerations, features } = $derived(data);
 </script>
 
 <Meta
@@ -31,4 +31,4 @@
   author="EmaDev"
 />
 <Board user={data.user} {images} />
-<Sidebar user={data.user} {remainingGenerations} />
+<Sidebar user={data.user} {remainingGenerations} {features} />

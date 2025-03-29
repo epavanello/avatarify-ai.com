@@ -25,3 +25,7 @@ const config: ConfigType = {
 
 export type Config = typeof config;
 export default config;
+
+export const FEATURES = {
+  DAILY_FREE_CREDITS: false
+} as const;
