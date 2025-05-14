@@ -1,10 +1,10 @@
 # Avatarify AI
 
-Avatarify AI is a SaaS platform that leverages artificial intelligence to generate personalized avatars using Stable Diffusion. The service allows users to create unique, high-quality profile pictures with various artistic styles and themes.
+Avatarify AI is a SaaS platform that leverages artificial intelligence to generate personalized avatars. The service allows users to create unique, high-quality profile pictures with various artistic styles and themes.
 
 ## Features
 
-- 🤖 AI-powered avatar generation using Stable Diffusion
+- 🤖 AI-powered avatar generation
 - 🎨 Multiple artistic styles and themes to choose from
 - 📸 Custom prompt support for personalized results
 - 🔒 Secure Google authentication
@@ -19,7 +19,6 @@ Avatarify AI is a SaaS platform that leverages artificial intelligence to genera
 - **Backend**: Supabase
 - **Authentication**: Supabase Auth
 - **Payment Processing**: Stripe
-- **AI Model**: Stable Diffusion
 - **Analytics**: Plausible Analytics
 
 ## Getting Started
@@ -43,7 +42,7 @@ Avatarify AI is a SaaS platform that leverages artificial intelligence to genera
 
    - `PRIVATE_SUPABASE_SERVICE_ROLE` - Your Supabase service role key
    - `PRIVATE_STRIPE_SECRET_KEY` - Your Stripe secret key
-   - `PRIVATE_REPLICATE_API_TOKEN` - Your Replicate API token for Stable Diffusion
+   - `PRIVATE_REPLICATE_API_TOKEN` - Your Replicate API token
 
 4. Start the development server:
    ```bash
