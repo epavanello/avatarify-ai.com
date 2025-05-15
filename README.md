@@ -50,15 +50,6 @@ Avatarify AI is a SaaS platform that leverages artificial intelligence to genera
    npm run dev
    ```
 
-## Development
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run check` - Type check
-- `npm run lint` - Lint code
-- `npm run format` - Format code
-
 ## License
 
 Private - All rights reserved
