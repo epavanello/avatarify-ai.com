@@ -138,27 +138,6 @@
   bind:this={board}
 >
   <div
-    class="relative w-full max-w-2xl rounded-lg bg-gradient-to-bl from-sky-600 to-[#40e49d] p-1 dark:to-[#09aa64]"
-  >
-    <div class="flex flex-col items-center gap-3 rounded-lg bg-white/5 p-4 backdrop-blur-sm">
-      <p class="text-lg font-medium text-white">🚀 Introducing StudyFa.st</p>
-      <p class="text-center text-white/90">
-        We've built a revolutionary app to supercharge your learning experience.
-        <br />
-        Join thousands of successful students!
-      </p>
-      <Button
-        href="https://StudyFa.st"
-        target="_blank"
-        variant="secondary"
-        class="transition-transform hover:scale-105"
-      >
-        Try it Free Now →
-      </Button>
-    </div>
-  </div>
-
-  <div
     class="photos-border relative flex aspect-[4/3] w-full max-w-xl flex-col items-center justify-center gap-4 bg-base-100"
   >
     {#if selectedImageId}
